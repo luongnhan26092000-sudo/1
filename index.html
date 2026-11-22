@@ -27,6 +27,14 @@ tbody tr{border-bottom:1px solid #1d2d45}tbody tr:last-child{border-bottom:0}tbo
 .source{margin-top:12px}.source a{color:#82baff}.footer{margin:28px 0;color:var(--muted);font-size:12px}
 .hidden{display:none}
 td.est,.price.est{color:#e7c27d}.price.est{font-size:28px}
+.in{background:#142238;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;color-scheme:dark;width:100%;min-width:90px}
+.in.c-date{min-width:150px}.in.c-key{min-width:150px}.in.c-lit,.in.c-price{text-align:right}
+.in.est{color:#e7c27d}.in.diff{border-color:#e7c27d;background:#2a2113}
+.calcbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}.calcbar button{padding:9px 14px}
+td.cnote{color:var(--muted);font-size:12px;white-space:normal;min-width:200px;text-align:left}
+button.x{padding:5px 9px;border-radius:8px;background:transparent}
+.c-total{font-weight:800}
+tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
 </style></head>
 <body><div class="wrap">
 <div class="top"><div><div class="brand">FUEL INTELLIGENCE • VIETNAM</div><div class="title">Giá dầu diesel theo ngày</div><div class="sub">Giá bán lẻ Petrolimex • Đơn vị: đồng/lít • Xem lại từ đầu tháng trước đến hôm nay</div></div>
@@ -51,6 +59,13 @@ td.est,.price.est{color:#e7c27d}.price.est{font-size:28px}
 <div class="card"><div class="label">Dầu Diesel 0,05S-II</div><div class="price" id="do">—</div><div class="unit">đồng/lít</div><div class="badge" id="b_do"></div></div>
 <div class="card"><div class="label">Dầu Diesel 0,001S-V</div><div class="price" id="do001">—</div><div class="unit">đồng/lít</div><div class="badge" id="b_do001"></div></div>
 </div>
+
+<div class="section" id="calc"><h2>Tính tiền theo số lít</h2>
+<div class="muted" style="font-size:13px;margin-bottom:10px">Đang tính theo giá <b id="calcRegion">Vùng 1</b> (đổi ở ô “Khu vực giá” phía trên). Đơn giá tự điền theo ngày và loại dầu; nếu phiếu ghi giá khác, sửa ô “Đơn giá” và trang sẽ báo lệch so với bảng giá. Dữ liệu nhập được lưu trên máy bạn.</div>
+<div class="tblwrap"><table><thead><tr><th>Ngày</th><th>Loại dầu</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th>Ghi chú</th><th></th></tr></thead>
+<tbody id="calcRows"></tbody>
+<tfoot><tr><td colspan="2">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td colspan="2" class="cnote" id="sumNote"></td></tr></tfoot></table></div>
+<div class="calcbar"><button id="addRow">+ Thêm dòng</button><button id="copyRes">Sao chép (dán vào Excel)</button><button id="clearRows">Xóa hết</button><span class="muted" id="calcMsg" style="font-size:13px"></span></div></div>
 
 <div class="section" id="intraBox"><h2>Diễn biến trong ngày</h2>
 <div class="tblwrap"><table><thead><tr><th>Khung giờ</th><th>Diesel 0,05S-II</th><th>Diesel 0,001S-V</th></tr></thead><tbody id="intra"></tbody></table></div></div>
@@ -184,6 +199,8 @@ function render(){
       KEYS.map(k=>cell(p,k)).join('')+'</tr>');
   }
   $('hist').innerHTML=out.join('');
+  const ae=document.activeElement;
+  if(!(ae&&$('calcRows').contains(ae)))renderCalc();
 }
 
 function setDay(d){
@@ -198,6 +215,125 @@ $('prev').addEventListener('click',()=>setDay(addDays(sel,-1)));
 $('next').addEventListener('click',()=>setDay(addDays(sel,1)));
 $('today').addEventListener('click',()=>setDay(lastData));
 $('hist').addEventListener('click',e=>{const tr=e.target.closest('tr[data-d]');if(tr)setDay(tr.dataset.d);});
+/* ===== Tính tiền theo số lít ===== */
+const CALC_KEY='diesel_calc_rows_v1';
+const KEYNAME={do:'Diesel 0,05S-II',do001:'Diesel 0,001S-V'};
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:null;};
+const vn=n=>n.toLocaleString('vi-VN');
+function loadRows(){
+  try{
+    const r=JSON.parse(localStorage.getItem(CALC_KEY)||'null');
+    if(Array.isArray(r)&&r.length)return r.map(x=>({
+      date:/^\d{4}-\d{2}-\d{2}$/.test(x.date)?x.date:lastData,
+      key:x.key==='do001'?'do001':'do',
+      liters:x.liters==null?'':String(x.liters).replace(/[^0-9.]/g,''),
+      price:num(x.price)}));
+  }catch(e){}
+  return null;
+}
+function saveRows(){try{localStorage.setItem(CALC_KEY,JSON.stringify(rows));}catch(e){}}
+let rows=loadRows()||[{date:sel,key:'do',liters:'',price:null}];
+let sumL=0,sumA=0;
+const cb=$('calcRows');
+
+function newRow(){
+  const l=rows[rows.length-1];
+  return {date:l?l.date:sel,key:l?l.key:'do',liters:'',price:null};
+}
+function tablePrice(date,key){
+  if(date>DATA_THROUGH)return{v:null,est:false,before:null,change:null};
+  const p=periodAt(date);
+  const chg=PERIODS.find(x=>x.from.slice(0,10)===date&&x.from.slice(11)!=='00:00');
+  return{v:priceOf(p,key),est:isEst(p,key),
+    before:chg?priceOf(periodAt(date,'00:00'),key):null,change:chg?chg.from.slice(11):null};
+}
+function rowHTML(r,i){
+  return '<tr data-i="'+i+'">'+
+   '<td><input class="in c-date" type="date" min="'+minD+'" max="'+maxD+'" value="'+r.date+'"></td>'+
+   '<td><select class="in c-key"><option value="do"'+(r.key==='do'?' selected':'')+'>'+KEYNAME.do+'</option><option value="do001"'+(r.key==='do001'?' selected':'')+'>'+KEYNAME.do001+'</option></select></td>'+
+   '<td><input class="in c-lit" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="'+r.liters+'"></td>'+
+   '<td><input class="in c-price" type="number" inputmode="numeric" min="0" step="10" value=""></td>'+
+   '<td class="c-total">—</td><td class="cnote"></td>'+
+   '<td><button class="x" title="Xóa dòng">✕</button></td></tr>';
+}
+function refreshRow(tr,setPrice){
+  const r=rows[+tr.dataset.i];if(!r)return;
+  const tp=tablePrice(r.date,r.key);
+  const price=r.price!=null?r.price:tp.v;
+  const pin=tr.querySelector('.c-price');
+  if(setPrice)pin.value=price==null?'':price;
+  pin.classList.toggle('est',r.price==null&&tp.est);
+  const diff=r.price!=null&&tp.v!=null&&r.price!==tp.v;
+  pin.classList.toggle('diff',diff);
+  const lit=num(r.liters);
+  const tot=(lit!=null&&price!=null)?Math.round(lit*price):null;
+  tr.querySelector('.c-total').textContent=tot==null?'—':vn(tot)+' đ';
+  tr._lit=lit;tr._tot=tot;tr._price=price;
+  const n=[];
+  if(price==null)n.push('Chưa có giá cho ngày này, hãy nhập tay.');
+  if(r.price==null&&tp.est)n.push('≈ Giá ước tính.');
+  if(diff){
+    const d=r.price-tp.v;
+    n.push('Khác bảng giá ('+vn(tp.v)+' đ): phiếu '+(d>0?'cao hơn ':'thấp hơn ')+vn(Math.abs(d))+' đ/lít'+
+      (lit!=null?' ('+(d>0?'+':'−')+vn(Math.abs(Math.round(d*lit)))+' đ).':'.'));
+  }
+  if(tp.change)n.push('Ngày này đổi giá lúc '+tp.change+(tp.before!=null?' (trước đó '+vn(tp.before)+' đ)':'')+'; đang lấy giá sau điều chỉnh.');
+  tr.querySelector('.cnote').textContent=n.join(' ');
+}
+function totals(){
+  let sl=0,sa=0,miss=0;
+  cb.querySelectorAll('tr').forEach(tr=>{
+    refreshRow(tr,false);
+    if(tr._lit!=null)sl+=tr._lit;
+    if(tr._tot!=null)sa+=tr._tot;else if(tr._lit>0)miss++;
+  });
+  sumL=sl;sumA=sa;
+  $('sumLit').textContent=sl.toLocaleString('vi-VN',{maximumFractionDigits:2})+' lít';
+  $('sumAmt').textContent=vn(sa)+' đ';
+  $('sumNote').textContent=miss?miss+' dòng chưa có đơn giá nên chưa được cộng.':'';
+}
+function renderCalc(){
+  $('calcRegion').textContent=region()==='v1'?'Vùng 1':'Vùng 2';
+  cb.innerHTML=rows.map(rowHTML).join('');
+  cb.querySelectorAll('tr').forEach(tr=>refreshRow(tr,true));
+  totals();
+}
+cb.addEventListener('input',e=>{
+  const tr=e.target.closest('tr');if(!tr)return;const r=rows[+tr.dataset.i];
+  if(e.target.classList.contains('c-lit'))r.liters=e.target.value;
+  else if(e.target.classList.contains('c-price'))r.price=e.target.value===''?null:num(e.target.value);
+  else return;
+  totals();saveRows();
+});
+cb.addEventListener('change',e=>{
+  const tr=e.target.closest('tr');if(!tr)return;const r=rows[+tr.dataset.i];
+  if(e.target.classList.contains('c-date')){if(!e.target.value)return;r.date=e.target.value;r.price=null;}
+  else if(e.target.classList.contains('c-key')){r.key=e.target.value;r.price=null;}
+  else if(!e.target.classList.contains('c-price'))return;
+  refreshRow(tr,true);totals();saveRows();
+});
+cb.addEventListener('click',e=>{
+  const b=e.target.closest('button.x');if(!b)return;
+  rows.splice(+b.closest('tr').dataset.i,1);
+  if(!rows.length)rows.push(newRow());
+  saveRows();renderCalc();
+});
+function calcMsg(t){$('calcMsg').textContent=t;setTimeout(()=>{$('calcMsg').textContent='';},3500);}
+$('addRow').addEventListener('click',()=>{rows.push(newRow());saveRows();renderCalc();});
+$('clearRows').addEventListener('click',()=>{rows=[newRow()];rows[0].date=sel;saveRows();renderCalc();});
+$('copyRes').addEventListener('click',()=>{
+  const L=[['Ngày','Loại dầu','Số lít','Đơn giá','Thành tiền'].join('\t')];
+  cb.querySelectorAll('tr').forEach(tr=>{
+    const r=rows[+tr.dataset.i];
+    L.push([fmtVN(r.date),KEYNAME[r.key],tr._lit==null?'':tr._lit,tr._price==null?'':tr._price,tr._tot==null?'':tr._tot].join('\t'));
+  });
+  L.push(['Tổng','',sumL,'',sumA].join('\t'));
+  const txt=L.join('\n');
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject())
+    .then(()=>calcMsg('Đã sao chép, dán vào Excel được.'))
+    .catch(()=>calcMsg('Không sao chép được, hãy bôi đen bảng rồi Ctrl+C.'));
+});
+
 function applyData(d){
   if(!d||!Array.isArray(d.periods)||!d.periods.length||!d.dataThrough)throw new Error('data.json không hợp lệ');
   PERIODS=d.periods;DATA_THROUGH=d.dataThrough;
