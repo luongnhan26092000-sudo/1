@@ -49,6 +49,18 @@ td.c-total{color:#6ee8bd;font-size:15px}
 #addRow{background:var(--blue);color:#071322;border-color:var(--blue)}
 #clearRows{color:var(--red)}
 tbody tr.sel{background:#23406b;font-weight:800}
+.parties{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:14px}
+.party{background:#101b2d;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5}
+.party.seller{border-left-color:var(--green)}
+.party h4{margin:0 0 4px;font-size:11px;letter-spacing:1px;color:var(--muted);font-weight:800}
+.party b{display:block;font-size:14px;color:#fff;margin-bottom:2px}.party .m{color:#cfdcf2}
+#calc tbody tr.drow{border:0}#calc tr.drow td{padding:0 8px 10px}
+.dgrid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr .8fr;gap:8px;align-items:end;text-align:left}
+.dgrid label{display:block;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:3px}
+.dgrid .in{padding:6px 8px;font-size:13px}
+.dkm b{display:block;padding:6px 0;font-size:15px;color:#9fd0ff}.dkm b.neg{color:var(--red)}
+.dseller{grid-column:1/-1;font-size:12px;color:#9fb4d3}.dseller b{display:inline;color:#cfe3ff;font-size:12px}
+@media(max-width:760px){#calc tr.drow{display:block}#calc tr.drow td{display:block;padding:0 12px 12px}.dgrid{grid-template-columns:1fr 1fr}}
 td.xecell{text-align:left}td.xecell .c-xe{margin-top:6px}.in.c-lit,.in.c-price{text-align:right}
 .in.est{color:#e7c27d}.in.diff{border-color:#e7c27d;background:#2a2113}
 .calcbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}.calcbar button{padding:9px 14px}
@@ -108,7 +120,8 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
 </div>
 
 <div class="section" id="calc"><h2>Tính tiền theo số lít</h2>
-<div class="calcintro">Đang tính theo giá <b id="calcRegion" class="rg">Vùng 1</b> <span class="muted">(đổi ở ô “Khu vực giá” phía trên)</span>. <b>Chỉ cần nhập số lít</b>, đơn giá tự điền theo ngày và loại dầu. Phiếu ghi giá khác thì sửa ô “Đơn giá”, trang sẽ <b class="hl3">báo lệch</b> so với bảng giá.</div>
+<div class="calcintro">Đơn giá tự lấy theo <b>vùng của từng xe</b> (50LD-19444: Vùng 1; 50LD-19478 và 50LD-20236: Vùng 2); xe khác dùng vùng đang chọn ở trên: <b id="calcRegion" class="rg">Vùng 1</b>. <b>Chỉ cần nhập số lít</b>; tên tài xế, bên bán, bên mua tự điền theo xe. Phiếu ghi giá khác thì sửa ô “Đơn giá”, trang sẽ <b class="hl3">báo lệch</b> so với bảng giá.</div>
+<div class="parties" id="parties"></div>
 <div class="tblwrap"><table class="ctab"><colgroup><col style="width:15%"><col style="width:22%"><col style="width:9%"><col style="width:12%"><col style="width:15%"><col style="width:20%"><col style="width:7%"></colgroup><thead><tr><th>Ngày</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th>Số xe</th><th></th></tr></thead>
 <tbody id="calcRows"></tbody>
 <tfoot><tr><td colspan="2">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td colspan="2" class="cnote" id="sumNote"></td></tr></tfoot></table></div>
@@ -168,14 +181,14 @@ function periodAt(date,time){
   return r;
 }
 function region(){return $('region').value;}
-function priceOf(p,k){
+function priceOf(p,k,rg){
   if(!p)return null;
-  const r=region(),v=p[r][k];
+  const r=rg||region(),v=p[r][k];
   if(v!=null)return v;
   const e=p['e'+r.slice(1)];
   return e&&e[k]!=null?e[k]:null;
 }
-function isEst(p,k){return !!p&&p[region()][k]==null&&priceOf(p,k)!=null;}
+function isEst(p,k,rg){const r=rg||region();return !!p&&p[r][k]==null&&priceOf(p,k,r)!=null;}
 const EST_TIP='Giá ước tính (chưa có bảng Petrolimex chính thức)';
 function cell(p,k){
   const v=priceOf(p,k);
@@ -265,61 +278,90 @@ $('today').addEventListener('click',()=>setDay(lastData));
 $('hist').addEventListener('click',e=>{const tr=e.target.closest('tr[data-d]');if(tr)setDay(tr.dataset.d);});
 /* ===== Tính tiền theo số lít ===== */
 const CALC_KEY='diesel_calc_rows_v1';
-const XE_LIST=['50LD-19478','50LD-20236'];   // 2 xe như trên phiếu; mục 3 = Khác (tự nhập)
+/* Thông tin lấy từ file Power BI "Check bảng kê xuất nhiên liệu" (bảng INPUT và Fact) */
+const BUYER={name:'CÔNG TY CỔ PHẦN CHĂN NUÔI C.P. VIỆT NAM - CHI NHÁNH 3 TẠI ĐỒNG NAI',mst:'3600224423-016',addr:'Khu Công Nghiệp Biên Hòa 2, Phường Long Hưng, Thành phố Đồng Nai, Việt Nam'};
+const SELLERS={
+ tt:{name:'DOANH NGHIỆP TƯ NHÂN THANH TRÀ',mst:'3900641788',addr:'Tổ 5, ấp Phước Long 1, Xã Dương Minh Châu, Tỉnh Tây Ninh, Việt Nam'},
+ kv:{name:'CHI NHÁNH CÔNG TY TNHH DẦU NHỚT VÀ HÓA CHẤT KHANG VIỆT – TRẠM XĂNG DẦU ĐỒNG PHÚ',mst:'0313838939-004',addr:'Đường ĐT 741, Tổ 2, Ấp Thuận Hải, Xã Thuận Lợi, Thành Phố Đồng Nai, Việt Nam'}
+};
+const XE_INFO={
+ '50LD-19478':{driver:'Bùi Phan Trung',seller:'kv',region:'v2'},
+ '50LD-20236':{driver:'Phạm Hùng Mạnh',seller:'kv',region:'v2'},
+ '50LD-19444':{driver:'Trần Văn Cường',seller:'tt',region:'v1'}
+};
+const XE_LIST=Object.keys(XE_INFO);   // mục "Khác…" cho xe ngoài danh sách
 const KEYNAME={do:'Dầu Điêzen 0,05S Mức 2',do001:'Dầu Điêzen 0,001S Mức 5'};   // tên hàng ghi như trên phiếu
 const num=v=>{const n=parseFloat(v);return isFinite(n)?n:null;};
 const vn=n=>n.toLocaleString('vi-VN');
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function xeModeOf(x){
-  if(x.xeMode==='a'||x.xeMode==='b'||x.xeMode==='o')return x.xeMode;
-  const v=String(x.xe||'').toUpperCase();
-  if(v===XE_LIST[0]||!v)return 'a';
-  if(v===XE_LIST[1])return 'b';
-  return 'o';
+const str=(v,n)=>v==null?'':String(v).slice(0,n||40);
+const dig=v=>v==null?'':String(v).replace(/\D/g,'').slice(0,12);
+const rgName=r=>r==='v1'?'Vùng 1':'Vùng 2';
+const xeKey=r=>String(r.xe||'').trim().toUpperCase();
+const driverOf=x=>XE_INFO[x]?XE_INFO[x].driver:'';
+function rowRegion(r){const i=XE_INFO[xeKey(r)];return i?i.region:region();}
+
+function blankRow(o){
+  return Object.assign({date:sel,key:'do',liters:'',price:null,xeMode:'k',xe:XE_LIST[0],taixe:driverOf(XE_LIST[0]),phieu:'',hd:'',mdau:'',mcuoi:''},o||{});
 }
 function loadRows(){
   try{
     const r=JSON.parse(localStorage.getItem(CALC_KEY)||'null');
-    if(Array.isArray(r)&&r.length)return r.map(x=>({
-      date:/^\d{4}-\d{2}-\d{2}$/.test(x.date)?x.date:lastData,
-      key:x.key==='do001'?'do001':'do',
-      liters:x.liters==null?'':String(x.liters).replace(/[^0-9.]/g,''),
-      price:num(x.price),
-      xe:x.xe==null?'':String(x.xe).slice(0,20),
-      xeMode:xeModeOf(x)}));
+    if(Array.isArray(r)&&r.length)return r.map(x=>{
+      const v=String(x.xe||'').trim().toUpperCase().slice(0,20);
+      const known=XE_LIST.includes(v);
+      const mode=known?'k':(x.xeMode==='o'&&v!==''?'o':(v===''&&x.xeMode==='o'?'o':'k'));
+      const xe=mode==='k'?(known?v:XE_LIST[0]):v;
+      return {date:/^\d{4}-\d{2}-\d{2}$/.test(x.date)?x.date:lastData,
+        key:x.key==='do001'?'do001':'do',
+        liters:x.liters==null?'':String(x.liters).replace(/[^0-9.]/g,''),
+        price:num(x.price),xeMode:mode,xe:xe,
+        taixe:x.taixe==null?driverOf(xe):str(x.taixe),
+        phieu:str(x.phieu,20),hd:str(x.hd,20),mdau:dig(x.mdau),mcuoi:dig(x.mcuoi)};
+    });
   }catch(e){}
   return null;
 }
 function saveRows(){try{localStorage.setItem(CALC_KEY,JSON.stringify(rows));}catch(e){}}
-let rows=loadRows()||[{date:sel,key:'do',liters:'',price:null,xe:XE_LIST[0],xeMode:'a'}];
+let rows=loadRows()||[blankRow()];
 let sumL=0,sumA=0;
 const cb=$('calcRows');
 
 function newRow(){
   const l=rows[rows.length-1];
-  return {date:l?l.date:sel,key:l?l.key:'do',liters:'',price:null,xe:l?l.xe:XE_LIST[0],xeMode:l?l.xeMode:'a'};
+  return l?blankRow({date:l.date,key:l.key,xeMode:l.xeMode,xe:l.xe,taixe:l.taixe,mdau:l.mcuoi||''}):blankRow();
 }
-function tablePrice(date,key){
+function tablePrice(date,key,rg){
   if(date>DATA_THROUGH)return{v:null,est:false,before:null,change:null};
   const p=periodAt(date);
   const chg=PERIODS.find(x=>x.from.slice(0,10)===date&&x.from.slice(11)!=='00:00');
-  return{v:priceOf(p,key),est:isEst(p,key),
-    before:chg?priceOf(periodAt(date,'00:00'),key):null,change:chg?chg.from.slice(11):null};
+  return{v:priceOf(p,key,rg),est:isEst(p,key,rg),
+    before:chg?priceOf(periodAt(date,'00:00'),key,rg):null,change:chg?chg.from.slice(11):null};
+}
+function dfield(label,cls,val,ph,mode){
+  return '<div><label>'+label+'</label><input class="in '+cls+'" type="text"'+(mode?' inputmode="'+mode+'"':'')+' autocomplete="off" placeholder="'+ph+'" value="'+esc(val||'')+'"></div>';
 }
 function rowHTML(r,i){
+  const opts=XE_LIST.map(x=>'<option value="'+x+'"'+(r.xeMode==='k'&&r.xe===x?' selected':'')+'>'+x+'</option>').join('');
   return '<tr data-i="'+i+'">'+
    '<td data-l="Ngày"><input class="in c-date" type="date" min="'+minD+'" max="'+maxD+'" value="'+r.date+'"></td>'+
    '<td data-l="Tên hàng"><select class="in c-key"><option value="do"'+(r.key==='do'?' selected':'')+'>'+KEYNAME.do+'</option><option value="do001"'+(r.key==='do001'?' selected':'')+'>'+KEYNAME.do001+'</option></select></td>'+
    '<td data-l="Số lít"><input class="in c-lit" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="'+r.liters+'"></td>'+
    '<td data-l="Đơn giá (đ/lít)"><input class="in c-price" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value=""></td>'+
    '<td data-l="Thành tiền" class="c-total">—</td>'+
-   '<td data-l="Số xe" class="xecell"><select class="in c-xesel">'+
-     '<option value="a"'+(r.xeMode==='a'?' selected':'')+'>'+XE_LIST[0]+'</option>'+
-     '<option value="b"'+(r.xeMode==='b'?' selected':'')+'>'+XE_LIST[1]+'</option>'+
+   '<td data-l="Số xe" class="xecell"><select class="in c-xesel">'+opts+
      '<option value="o"'+(r.xeMode==='o'?' selected':'')+'>Khác…</option></select>'+
      '<input class="in c-xe'+(r.xeMode==='o'?'':' hidden')+'" type="text" maxlength="20" placeholder="Nhập số xe khác" value="'+(r.xeMode==='o'?esc(r.xe||''):'')+'"></td>'+
    '<td class="td-x"><button class="x" title="Xóa dòng">✕</button></td></tr>'+
-   '<tr class="nrow hidden"><td colspan="7" class="cnote"></td></tr>';
+   '<tr class="drow" data-r="'+i+'"><td colspan="7"><div class="dgrid">'+
+     dfield('Tên tài xế','c-tx',r.taixe,'Tên tài xế')+
+     dfield('Số phiếu','c-ph',r.phieu,'VD 16187','numeric')+
+     dfield('Số hóa đơn','c-hd',r.hd,'VD 00132757','numeric')+
+     dfield('Số menter (đầu)','c-md',r.mdau,'0','numeric')+
+     dfield('Số menter (cuối)','c-mc',r.mcuoi,'0','numeric')+
+     '<div class="dkm"><label>Số km</label><b class="c-km">—</b></div>'+
+     '<div class="dseller"></div></div></td></tr>'+
+   '<tr class="nrow hidden" data-r="'+i+'"><td colspan="7" class="cnote"></td></tr>';
 }
 function readPrice(inp){
   const raw=inp.value,digits=raw.replace(/\D/g,'');
@@ -337,7 +379,9 @@ function readPrice(inp){
 }
 function refreshRow(tr,setPrice){
   const r=rows[+tr.dataset.i];if(!r)return;
-  const tp=tablePrice(r.date,r.key);
+  const dr=tr.nextElementSibling,nr=dr.nextElementSibling;
+  const rg=rowRegion(r);
+  const tp=tablePrice(r.date,r.key,rg);
   const price=r.price!=null?r.price:tp.v;
   const pin=tr.querySelector('.c-price');
   if(setPrice)pin.value=price==null?'':vn(Math.round(price));
@@ -348,17 +392,33 @@ function refreshRow(tr,setPrice){
   const tot=(lit!=null&&price!=null)?Math.round(lit*price):null;
   tr.querySelector('.c-total').textContent=tot==null?'—':vn(tot)+' đ';
   tr._lit=lit;tr._tot=tot;tr._price=price;
+  // số km = menter cuối - đầu
+  const a=num(r.mdau),b=num(r.mcuoi);
+  const km=(a!=null&&b!=null)?b-a:null;
+  tr._km=km;
+  const kb=dr.querySelector('.c-km');
+  kb.textContent=km==null?'—':(km<0?'⚠ '+vn(km):vn(km)+' km');
+  kb.classList.toggle('neg',km!=null&&km<0);
+  // bên bán + vùng giá
+  const info=XE_INFO[xeKey(r)];
+  dr.querySelector('.dseller').innerHTML=info
+    ?'Bên bán: <b>'+esc(SELLERS[info.seller].name)+'</b> · <span class="rg">'+rgName(rg)+'</span>'
+    :'Xe khác: đang dùng <span class="rg">'+rgName(rg)+'</span> (ô “Khu vực giá” phía trên).';
+  // ghi chú
   const n=[];
   if(price==null)n.push('Chưa có giá cho ngày này, hãy nhập tay.');
   if(r.price==null&&tp.est)n.push('≈ Giá ước tính.');
   if(diff){
     const d=r.price-tp.v;
-    n.push('Khác bảng giá ('+vn(tp.v)+' đ): phiếu '+(d>0?'cao hơn ':'thấp hơn ')+vn(Math.abs(d))+' đ/lít'+
+    n.push('Khác bảng giá '+rgName(rg)+' ('+vn(tp.v)+' đ): phiếu '+(d>0?'cao hơn ':'thấp hơn ')+vn(Math.abs(d))+' đ/lít'+
       (lit!=null?' ('+(d>0?'+':'−')+vn(Math.abs(Math.round(d*lit)))+' đ).':'.'));
   }
+  if(km!=null&&km<0)n.push('Số menter cuối nhỏ hơn số đầu.');
   if(tp.change)n.push('Ngày này đổi giá lúc '+tp.change+(tp.before!=null?' (trước đó '+vn(tp.before)+' đ)':'')+'; đang lấy giá sau điều chỉnh.');
-  const nr=tr.nextElementSibling;
-  if(nr){const t=n.join(' ');nr.firstElementChild.textContent=t;nr.classList.toggle('hidden',!t);nr.classList.toggle('warnrow',!!diff);}
+  const t=n.join(' ');
+  nr.firstElementChild.textContent=t;
+  nr.classList.toggle('hidden',!t);
+  nr.classList.toggle('warnrow',!!diff||(km!=null&&km<0));
 }
 function totals(){
   let sl=0,sa=0,miss=0;
@@ -372,35 +432,61 @@ function totals(){
   $('sumAmt').textContent=vn(sa)+' đ';
   $('sumNote').textContent=miss?miss+' dòng chưa có đơn giá nên chưa được cộng.':'';
 }
+function renderParties(){
+  const seen={};
+  rows.forEach(r=>{const k=xeKey(r),info=XE_INFO[k];if(info){(seen[info.seller]=seen[info.seller]||[]);if(!seen[info.seller].includes(k))seen[info.seller].push(k);}});
+  let h='<div class="party"><h4>BÊN MUA (B)</h4><b>'+esc(BUYER.name)+'</b><div class="m">MST: '+esc(BUYER.mst)+'</div><div class="m">'+esc(BUYER.addr)+'</div></div>';
+  Object.keys(seen).forEach(k=>{
+    const s=SELLERS[k];
+    h+='<div class="party seller"><h4>BÊN BÁN (A) · XE '+esc(seen[k].join(', '))+'</h4><b>'+esc(s.name)+'</b><div class="m">MST: '+esc(s.mst)+'</div><div class="m">'+esc(s.addr)+'</div></div>';
+  });
+  $('parties').innerHTML=h;
+}
 function renderCalc(){
-  $('calcRegion').textContent=region()==='v1'?'Vùng 1':'Vùng 2';
+  $('calcRegion').textContent=rgName(region());
   cb.innerHTML=rows.map(rowHTML).join('');
   cb.querySelectorAll('tr[data-i]').forEach(tr=>refreshRow(tr,true));
-  totals();
+  totals();renderParties();
+}
+function ownerRow(el){
+  const tr=el.closest('tr');if(!tr)return null;
+  const i=tr.dataset.i!=null?tr.dataset.i:tr.dataset.r;
+  return i==null?null:cb.querySelector('tr[data-i="'+i+'"]');
 }
 cb.addEventListener('input',e=>{
-  const tr=e.target.closest('tr');if(!tr)return;const r=rows[+tr.dataset.i];
-  if(e.target.classList.contains('c-lit'))r.liters=e.target.value;
-  else if(e.target.classList.contains('c-price'))r.price=readPrice(e.target);
-  else if(e.target.classList.contains('c-xe')){r.xe=e.target.value;saveRows();return;}
+  const main=ownerRow(e.target);if(!main)return;
+  const r=rows[+main.dataset.i],c=e.target.classList;
+  if(c.contains('c-lit'))r.liters=e.target.value;
+  else if(c.contains('c-price'))r.price=readPrice(e.target);
+  else if(c.contains('c-xe')){r.xe=e.target.value;refreshRow(main,true);totals();renderParties();saveRows();return;}
+  else if(c.contains('c-tx')){r.taixe=e.target.value;saveRows();return;}
+  else if(c.contains('c-ph')){r.phieu=e.target.value;saveRows();return;}
+  else if(c.contains('c-hd')){r.hd=e.target.value;saveRows();return;}
+  else if(c.contains('c-md')||c.contains('c-mc')){
+    const d=dig(e.target.value);if(d!==e.target.value)e.target.value=d;
+    if(c.contains('c-md'))r.mdau=d;else r.mcuoi=d;
+    refreshRow(main,false);saveRows();return;
+  }
   else return;
   totals();saveRows();
 });
 cb.addEventListener('change',e=>{
-  const tr=e.target.closest('tr');if(!tr)return;const r=rows[+tr.dataset.i];
-  if(e.target.classList.contains('c-xesel')){
-    const m=e.target.value,inp=tr.querySelector('.c-xe');
-    r.xeMode=m;
-    r.xe=m==='a'?XE_LIST[0]:m==='b'?XE_LIST[1]:'';
-    inp.classList.toggle('hidden',m!=='o');
-    inp.value='';
-    if(m==='o')inp.focus();
-    saveRows();return;
+  const main=ownerRow(e.target);if(!main)return;
+  const r=rows[+main.dataset.i],c=e.target.classList;
+  if(c.contains('c-xesel')){
+    const v=e.target.value,inp=main.querySelector('.c-xe');
+    if(v==='o'){r.xeMode='o';r.xe='';r.taixe='';}
+    else{r.xeMode='k';r.xe=v;r.taixe=driverOf(v);}
+    inp.classList.toggle('hidden',v!=='o');inp.value='';
+    main.nextElementSibling.querySelector('.c-tx').value=r.taixe;
+    r.price=null;
+    if(v==='o')inp.focus();
+    refreshRow(main,true);totals();renderParties();saveRows();return;
   }
-  if(e.target.classList.contains('c-date')){if(!e.target.value)return;r.date=e.target.value;r.price=null;}
-  else if(e.target.classList.contains('c-key')){r.key=e.target.value;r.price=null;}
-  else if(!e.target.classList.contains('c-price'))return;
-  refreshRow(tr,true);totals();saveRows();
+  if(c.contains('c-date')){if(!e.target.value)return;r.date=e.target.value;r.price=null;}
+  else if(c.contains('c-key')){r.key=e.target.value;r.price=null;}
+  else if(!c.contains('c-price'))return;
+  refreshRow(main,true);totals();saveRows();
 });
 cb.addEventListener('click',e=>{
   const b=e.target.closest('button.x');if(!b)return;
@@ -410,16 +496,16 @@ cb.addEventListener('click',e=>{
 });
 function calcMsg(t){$('calcMsg').textContent=t;setTimeout(()=>{$('calcMsg').textContent='';},3500);}
 $('addRow').addEventListener('click',()=>{rows.push(newRow());saveRows();renderCalc();});
-$('clearRows').addEventListener('click',()=>{rows=[newRow()];rows[0].date=sel;rows[0].xe=XE_LIST[0];rows[0].xeMode='a';saveRows();renderCalc();});
+$('clearRows').addEventListener('click',()=>{rows=[blankRow({date:sel})];saveRows();renderCalc();});
 $('copyRes').addEventListener('click',()=>{
-  const L=[['Ngày','Tên hàng','Số lít','Đơn giá','Thành tiền','Số xe'].join('\t')];
+  const L=[['Ngày','Số phiếu','Số hóa đơn','Tên hàng','Số lít','Đơn giá','Thành tiền','Số xe','Tên tài xế','Số menter (đầu)','Số menter (cuối)','Số km','Bên bán (A)','MST bên bán','Bên mua (B)','MST bên mua'].join('\t')];
   cb.querySelectorAll('tr[data-i]').forEach(tr=>{
-    const r=rows[+tr.dataset.i];
-    L.push([fmtVN(r.date),KEYNAME[r.key],tr._lit==null?'':tr._lit,tr._price==null?'':tr._price,tr._tot==null?'':tr._tot,(r.xe||'').toUpperCase()].join('\t'));
+    const r=rows[+tr.dataset.i],info=XE_INFO[xeKey(r)],sl=info?SELLERS[info.seller]:null;
+    L.push([fmtVN(r.date),r.phieu,r.hd,KEYNAME[r.key],tr._lit==null?'':tr._lit,tr._price==null?'':tr._price,tr._tot==null?'':tr._tot,
+      xeKey(r),r.taixe,r.mdau,r.mcuoi,tr._km==null?'':tr._km,sl?sl.name:'',sl?sl.mst:'',BUYER.name,BUYER.mst].join('\t'));
   });
-  L.push(['Tổng','',sumL,'',sumA,''].join('\t'));
-  const txt=L.join('\n');
-  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject())
+  const T=Array(16).fill('');T[0]='Tổng';T[4]=sumL;T[6]=sumA;L.push(T.join('\t'));
+  (navigator.clipboard?navigator.clipboard.writeText(L.join('\n')):Promise.reject())
     .then(()=>calcMsg('Đã sao chép, dán vào Excel được.'))
     .catch(()=>calcMsg('Không sao chép được, hãy bôi đen bảng rồi Ctrl+C.'));
 });
