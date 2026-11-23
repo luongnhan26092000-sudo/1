@@ -26,6 +26,12 @@ tbody tr{border-bottom:1px solid #1d2d45}tbody tr:last-child{border-bottom:0}tbo
 .warn{background:#2a2113;border:1px solid #6b5120;color:#f0d9a8;padding:12px 15px;border-radius:12px;font-size:13px;margin-top:14px}
 .source{margin-top:12px}.source a{color:#82baff}.footer{margin:28px 0;color:var(--muted);font-size:12px}
 .hidden{display:none}
+.page-nav{margin:18px 0 8px}.page-nav button{padding:10px 18px}
+#managePage{background:linear-gradient(145deg,#172941,#101b2d);border:1px solid #3a6aa8;border-radius:18px;padding:20px;margin-top:18px;box-shadow:0 0 0 3px rgba(88,168,255,.08)}
+#managePage .section{margin-top:10px;margin-bottom:28px}
+#managePage .in{min-width:120px}
+#managePage td:last-child{width:55px}
+#managePage .x{color:var(--red)}
 td.est,.price.est{color:#e7c27d}.price.est{font-size:28px}
 .in{background:#142238;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font:inherit;font-size:14px;color-scheme:dark;width:100%;min-width:0}
 .in.c-xe{text-transform:uppercase}
@@ -73,6 +79,12 @@ td.cnote{color:var(--muted);font-size:12px;white-space:normal;text-align:left}
 #calc tbody tr.nrow{border:0}
 #calc tr.nrow td{padding:0 12px 10px}
 #calc tr.nrow.hidden{display:none}
+.page-nav{margin:18px 0 8px}.page-nav button{padding:10px 18px}
+#managePage{background:linear-gradient(145deg,#172941,#101b2d);border:1px solid #3a6aa8;border-radius:18px;padding:20px;margin-top:18px;box-shadow:0 0 0 3px rgba(88,168,255,.08)}
+#managePage .section{margin-top:10px;margin-bottom:28px}
+#managePage .in{min-width:120px}
+#managePage td:last-child{width:55px}
+#managePage .x{color:var(--red)}
 @media(max-width:760px){
  #calc table,#calc tbody,#calc tfoot{display:block}
  #calc colgroup,#calc thead{display:none}
@@ -96,6 +108,11 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
 <body><div class="wrap">
 <div class="top"><div><div class="brand">FUEL INTELLIGENCE • VIETNAM</div><div class="title">Giá dầu diesel theo ngày</div><div class="sub">Giá bán lẻ Petrolimex • Đơn vị: đồng/lít • Xem lại từ đầu tháng trước đến hôm nay</div></div>
 <div class="actions"><button class="primary" id="refresh">↻ Tải lại dữ liệu</button><a class="btn" href="https://www.petrolimex.com.vn/" target="_blank" rel="noopener">Petrolimex ↗</a></div></div>
+<div class="actions page-nav">
+  <button class="primary" id="navMain">Nhập liệu</button>
+  <button id="navManage">Quản lý tài xế & bên bán</button>
+</div>
+<div id="mainPage">
 <div class="status"><span id="state"></span><span id="updated"></span></div>
 
 
@@ -141,6 +158,21 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
 <p>Giá được cập nhật tự động: một tác vụ trên GitHub đọc bảng giá Petrolimex mỗi giờ và ghi vào <code>data.json</code>; khi giá đổi, kỳ mới được thêm vào lịch sử. Thời điểm có hiệu lực của kỳ mới được làm tròn xuống giờ phát hiện, nên có thể lệch tối đa khoảng 1 giờ so với giờ chính thức.</p></div>
 <div class="source"><a href="https://www.petrolimex.com.vn/ndi/thong-cao-bao-chi.html" target="_blank" rel="noopener">Thông cáo điều chỉnh giá – Petrolimex</a> · <a href="https://webgia.com/gia-xang-dau/petrolimex/" target="_blank" rel="noopener">Bảng giá Petrolimex theo vùng (nguồn đọc tự động)</a> · <a href="https://moit.gov.vn/" target="_blank" rel="noopener">Bộ Công Thương</a></div></div>
 <div class="footer">Lưu ý: Vùng 1 và Vùng 2 có giá khác nhau. Mức giá trên là giá bán lẻ Petrolimex, không phải giá cơ sở của Bộ Công Thương.</div>
+</div>
+</div><!-- /mainPage -->
+
+<div id="managePage" class="hidden">
+  <div class="section" id="driverManage">
+    <h2>Danh mục tài xế & xe</h2>
+    <p class="muted">Mỗi xe được gán tài xế, bên bán và vùng giá. Thay đổi tại đây sẽ tự cập nhật ở trang nhập liệu.</p>
+    <div class="tblwrap"><table class="ctab"><thead><tr><th>Biển số xe</th><th>Tên tài xế</th><th>Bên bán</th><th>Vùng giá</th><th></th></tr></thead><tbody id="vehicleMasterRows"></tbody></table></div>
+    <div class="calcbar"><button class="primary" id="addVehicle">+ Thêm xe / tài xế</button></div>
+  </div>
+  <div class="section" id="sellerManage">
+    <h2>Danh mục bên bán</h2>
+    <div class="tblwrap"><table class="ctab"><thead><tr><th>Mã</th><th>Tên bên bán</th><th>Mã số thuế</th><th>Địa chỉ</th><th></th></tr></thead><tbody id="sellerMasterRows"></tbody></table></div>
+    <div class="calcbar"><button class="primary" id="addSeller">+ Thêm bên bán</button><button id="saveMaster">Lưu danh mục</button><span class="muted" id="masterMsg"></span></div>
+  </div>
 </div>
 <script>
 /* ===== DỮ LIỆU: mỗi dòng = một kỳ điều hành, hiệu lực từ thời điểm "from" đến kỳ kế tiếp =====
@@ -280,16 +312,24 @@ $('hist').addEventListener('click',e=>{const tr=e.target.closest('tr[data-d]');i
 const CALC_KEY='diesel_calc_rows_v1';
 /* Thông tin lấy từ file Power BI "Check bảng kê xuất nhiên liệu" (bảng INPUT và Fact) */
 const BUYER={name:'CÔNG TY CỔ PHẦN CHĂN NUÔI C.P. VIỆT NAM - CHI NHÁNH 3 TẠI ĐỒNG NAI',mst:'3600224423-016',addr:'Khu Công Nghiệp Biên Hòa 2, Phường Long Hưng, Thành phố Đồng Nai, Việt Nam'};
-const SELLERS={
+const DEFAULT_SELLERS={
  tt:{name:'DOANH NGHIỆP TƯ NHÂN THANH TRÀ',mst:'3900641788',addr:'Tổ 5, ấp Phước Long 1, Xã Dương Minh Châu, Tỉnh Tây Ninh, Việt Nam'},
  kv:{name:'CHI NHÁNH CÔNG TY TNHH DẦU NHỚT VÀ HÓA CHẤT KHANG VIỆT – TRẠM XĂNG DẦU ĐỒNG PHÚ',mst:'0313838939-004',addr:'Đường ĐT 741, Tổ 2, Ấp Thuận Hải, Xã Thuận Lợi, Thành Phố Đồng Nai, Việt Nam'}
 };
-const XE_INFO={
+const DEFAULT_XE_INFO={
  '50LD-19478':{driver:'Bùi Phan Trung',seller:'kv',region:'v2'},
  '50LD-20236':{driver:'Phạm Hùng Mạnh',seller:'kv',region:'v2'},
  '50LD-19444':{driver:'Trần Văn Cường',seller:'tt',region:'v1'}
 };
-const XE_LIST=Object.keys(XE_INFO);   // mục "Khác…" cho xe ngoài danh sách
+const MASTER_KEY='diesel_master_v1';
+function loadMaster(){
+  try{const saved=JSON.parse(localStorage.getItem(MASTER_KEY)||'null');if(saved&&saved.sellers&&saved.vehicles)return saved;}catch(e){}
+  return {sellers:DEFAULT_SELLERS,vehicles:DEFAULT_XE_INFO};
+}
+let master=loadMaster();
+let SELLERS=master.sellers;
+let XE_INFO=master.vehicles;
+let XE_LIST=Object.keys(XE_INFO);   // mục "Khác…" cho xe ngoài danh sách
 const KEYNAME={do:'Dầu Điêzen 0,05S Mức 2',do001:'Dầu Điêzen 0,001S Mức 5'};   // tên hàng ghi như trên phiếu
 const num=v=>{const n=parseFloat(v);return isFinite(n)?n:null;};
 const vn=n=>n.toLocaleString('vi-VN');
@@ -508,6 +548,56 @@ $('copyRes').addEventListener('click',()=>{
   (navigator.clipboard?navigator.clipboard.writeText(L.join('\n')):Promise.reject())
     .then(()=>calcMsg('Đã sao chép, dán vào Excel được.'))
     .catch(()=>calcMsg('Không sao chép được, hãy bôi đen bảng rồi Ctrl+C.'));
+});
+
+
+/* ===== QUẢN LÝ DANH MỤC TÀI XẾ / BÊN BÁN ===== */
+function saveMasterData(){try{localStorage.setItem(MASTER_KEY,JSON.stringify({sellers:SELLERS,vehicles:XE_INFO}));}catch(e){}}
+function renderMaster(){
+  $('vehicleMasterRows').innerHTML=Object.entries(XE_INFO).map(([plate,v])=>'<tr><td><input class="in m-plate" value="'+esc(plate)+'"></td><td><input class="in m-driver" value="'+esc(v.driver||'')+'"></td><td><select class="in m-seller">'+Object.keys(SELLERS).map(k=>'<option value="'+esc(k)+'"'+(k===v.seller?' selected':'')+'>'+esc(SELLERS[k].name)+'</option>').join('')+'</select></td><td><select class="in m-region"><option value="v1"'+(v.region==='v1'?' selected':'')+'>Vùng 1</option><option value="v2"'+(v.region==='v2'?' selected':'')+'>Vùng 2</option></select></td><td><button class="x m-del-vehicle">✕</button></td></tr>').join('');
+  $('sellerMasterRows').innerHTML=Object.entries(SELLERS).map(([k,v])=>'<tr><td><input class="in s-key" value="'+esc(k)+'"></td><td><input class="in s-name" value="'+esc(v.name||'')+'"></td><td><input class="in s-mst" value="'+esc(v.mst||'')+'"></td><td><input class="in s-addr" value="'+esc(v.addr||'')+'"></td><td><button class="x m-del-seller">✕</button></td></tr>').join('');
+}
+function readMasterFromUI(){
+  const vehicles={};
+  $('vehicleMasterRows').querySelectorAll('tr').forEach(tr=>{
+    const plate=tr.querySelector('.m-plate').value.trim().toUpperCase();
+    if(plate)vehicles[plate]={driver:tr.querySelector('.m-driver').value.trim(),seller:tr.querySelector('.m-seller').value,region:tr.querySelector('.m-region').value};
+  });
+  const sellers={};
+  $('sellerMasterRows').querySelectorAll('tr').forEach(tr=>{
+    const key=tr.querySelector('.s-key').value.trim();
+    if(key)sellers[key]={name:tr.querySelector('.s-name').value.trim(),mst:tr.querySelector('.s-mst').value.trim(),addr:tr.querySelector('.s-addr').value.trim()};
+  });
+  if(!Object.keys(sellers).length){alert('Cần có ít nhất một bên bán.');return false;}
+  Object.keys(vehicles).forEach(k=>{if(!sellers[vehicles[k].seller])vehicles[k].seller=Object.keys(sellers)[0];});
+  SELLERS=sellers;XE_INFO=vehicles;XE_LIST=Object.keys(XE_INFO);
+  rows.forEach(r=>{if(r.xeMode==='k'&&!XE_INFO[r.xe]){r.xeMode='o';r.xe='';}else if(r.xeMode==='k')r.taixe=driverOf(r.xe);});
+  saveMasterData();saveRows();renderCalc();renderMaster();
+  $('masterMsg').textContent='Đã lưu danh mục.';
+  return true;
+}
+$('addVehicle').addEventListener('click',()=>{
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td><input class="in m-plate" placeholder="VD: 50LD-12345"></td><td><input class="in m-driver" placeholder="Tên tài xế"></td><td><select class="in m-seller">'+Object.keys(SELLERS).map(k=>'<option value="'+esc(k)+'">'+esc(SELLERS[k].name)+'</option>').join('')+'</select></td><td><select class="in m-region"><option value="v1">Vùng 1</option><option value="v2">Vùng 2</option></select></td><td><button class="x m-del-vehicle">✕</button></td>';
+  $('vehicleMasterRows').appendChild(tr);
+});
+$('addSeller').addEventListener('click',()=>{
+  const key='ben_ban_'+Date.now(),tr=document.createElement('tr');
+  tr.innerHTML='<td><input class="in s-key" value="'+key+'"></td><td><input class="in s-name" placeholder="Tên bên bán"></td><td><input class="in s-mst" placeholder="Mã số thuế"></td><td><input class="in s-addr" placeholder="Địa chỉ"></td><td><button class="x m-del-seller">✕</button></td>';
+  $('sellerMasterRows').appendChild(tr);
+});
+$('managePage').addEventListener('click',e=>{
+  if(e.target.closest('.m-del-vehicle'))e.target.closest('tr').remove();
+  if(e.target.closest('.m-del-seller'))e.target.closest('tr').remove();
+});
+$('saveMaster').addEventListener('click',readMasterFromUI);
+$('navMain').addEventListener('click',()=>{
+  $('mainPage').classList.remove('hidden');$('managePage').classList.add('hidden');
+  $('navMain').classList.add('primary');$('navManage').classList.remove('primary');
+});
+$('navManage').addEventListener('click',()=>{
+  $('mainPage').classList.add('hidden');$('managePage').classList.remove('hidden');
+  $('navManage').classList.add('primary');$('navMain').classList.remove('primary');renderMaster();
 });
 
 function applyData(d){
