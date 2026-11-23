@@ -54,13 +54,15 @@ tbody tr.sel{background:#23406b;font-weight:800}
 .party.seller{border-left-color:var(--green)}
 .party h4{margin:0 0 4px;font-size:11px;letter-spacing:1px;color:var(--muted);font-weight:800}
 .party b{display:block;font-size:14px;color:#fff;margin-bottom:2px}.party .m{color:#cfdcf2}
-#calc tbody tr.drow{border:0}#calc tr.drow td{padding:0 8px 10px}
-.dgrid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr .8fr;gap:8px;align-items:end;text-align:left}
-.dgrid label{display:block;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:3px}
-.dgrid .in{padding:6px 8px;font-size:13px}
-.dkm b{display:block;padding:6px 0;font-size:15px;color:#9fd0ff}.dkm b.neg{color:var(--red)}
-.dseller{grid-column:1/-1;font-size:12px;color:#9fb4d3}.dseller b{display:inline;color:#cfe3ff;font-size:12px}
-@media(max-width:760px){#calc tr.drow{display:block}#calc tr.drow td{display:block;padding:0 12px 12px}.dgrid{grid-template-columns:1fr 1fr}}
+.dkm b{display:block;font-size:15px;color:#9fd0ff}.dkm b.neg{color:var(--red)}
+.calcgap{height:18px}
+.subhead{margin:0 0 8px;font-size:13px;font-weight:800;letter-spacing:.5px;color:#9fd0ff;text-transform:uppercase}
+.dtab{table-layout:fixed}.dtab th,.dtab td{padding:8px;text-align:left}
+.dtab td.dkm,.dtab th.dkm{text-align:right}
+.dtab .in{padding:6px 8px;font-size:13px}
+.dtab td.dnum{color:var(--muted);font-weight:800}
+.dtab td.dseller{white-space:normal;font-size:12px;line-height:1.45;color:#9fb4d3}.dtab td.dseller b{color:#cfe3ff;font-size:12px}
+#calc #driverRows tr{border-top:1px solid #1d2d45}#calc #driverRows tr:first-child{border-top:0}
 td.xecell{text-align:left}td.xecell .c-xe{margin-top:6px}.in.c-lit,.in.c-price{text-align:right}
 .in.est{color:#e7c27d}.in.diff{border-color:#e7c27d;background:#2a2113}
 .calcbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}.calcbar button{padding:9px 14px}
@@ -82,6 +84,12 @@ td.cnote{color:var(--muted);font-size:12px;white-space:normal;text-align:left}
  #calc td[data-l="Tên hàng"],#calc td[data-l="Số xe"]{grid-column:1/-1}
  #calc td.c-total{font-size:16px}
  #calc td.td-x{position:absolute;top:6px;right:8px}
+ #calc #driverRows tr.drow{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 12px 10px;align-items:end}
+ #calc #driverRows tr.drow td{display:block;padding:0;text-align:left;white-space:normal}
+ #calc #driverRows tr.drow td[data-l]::before{content:attr(data-l);display:block;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:3px}
+ #calc #driverRows tr.drow td.dnum{display:none}
+ #calc #driverRows td[data-l="Tên tài xế"],#calc #driverRows td.dseller{grid-column:1/-1}
+ #calc .dtab td.dkm{text-align:left}
  #calc tr.nrow{display:block}
  #calc tr.nrow td{display:block;padding:0 12px 12px}
  #calc tfoot tr{display:flex;flex-wrap:wrap;gap:4px 16px;padding:12px;border-top:1px solid var(--line);background:#101b2d}
@@ -120,11 +128,11 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
 </div>
 
 <div class="section" id="calc"><h2>Tính tiền theo số lít</h2>
-<div class="calcintro">Đơn giá tự lấy theo <b>vùng của từng xe</b> (50LD-19444: Vùng 1; 50LD-19478 và 50LD-20236: Vùng 2); xe khác dùng vùng đang chọn ở trên: <b id="calcRegion" class="rg">Vùng 1</b>. <b>Chỉ cần nhập số lít</b>; tên tài xế, bên bán, bên mua tự điền theo xe. Phiếu ghi giá khác thì sửa ô “Đơn giá”, trang sẽ <b class="hl3">báo lệch</b> so với bảng giá.</div>
 <div class="parties" id="parties"></div>
-<div class="tblwrap"><table class="ctab"><colgroup><col style="width:15%"><col style="width:22%"><col style="width:9%"><col style="width:12%"><col style="width:15%"><col style="width:20%"><col style="width:7%"></colgroup><thead><tr><th>Ngày</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th>Số xe</th><th></th></tr></thead>
+<h3 class="subhead">Bảng 1 · Ngày &amp; nhiên liệu</h3><div class="tblwrap"><table class="ctab"><colgroup><col style="width:15%"><col style="width:22%"><col style="width:9%"><col style="width:12%"><col style="width:15%"><col style="width:20%"><col style="width:7%"></colgroup><thead><tr><th>Ngày</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th>Số xe</th><th></th></tr></thead>
 <tbody id="calcRows"></tbody>
 <tfoot><tr><td colspan="2">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td colspan="2" class="cnote" id="sumNote"></td></tr></tfoot></table></div>
+<div class="calcgap"></div><h3 class="subhead">Bảng 2 · Tài xế &amp; chứng từ</h3><div class="tblwrap"><table class="dtab"><colgroup><col style="width:4%"><col style="width:17%"><col style="width:11%"><col style="width:12%"><col style="width:11%"><col style="width:11%"><col style="width:9%"><col style="width:25%"></colgroup><thead><tr><th>#</th><th>Tên tài xế</th><th>Số phiếu</th><th>Số hóa đơn</th><th>Số menter (đầu)</th><th>Số menter (cuối)</th><th class="dkm">Số km</th><th>Bên bán</th></tr></thead><tbody id="driverRows"></tbody></table></div>
 <div class="calcbar"><button id="addRow">+ Thêm dòng</button><button id="copyRes">Sao chép (dán vào Excel)</button><button id="clearRows">Xóa hết</button><span class="muted" id="calcMsg" style="font-size:13px"></span></div></div>
 
 <div class="section" id="intraBox"><h2>Diễn biến trong ngày</h2>
@@ -261,7 +269,7 @@ function render(){
   }
   $('hist').innerHTML=out.join('');
   const ae=document.activeElement;
-  if(!(ae&&$('calcRows').contains(ae)))renderCalc();
+  if(!(ae&&($('calcRows').contains(ae)||$('driverRows').contains(ae))))renderCalc();
 }
 
 function setDay(d){
@@ -325,7 +333,7 @@ function loadRows(){
 function saveRows(){try{localStorage.setItem(CALC_KEY,JSON.stringify(rows));}catch(e){}}
 let rows=loadRows()||[blankRow()];
 let sumL=0,sumA=0;
-const cb=$('calcRows');
+const cb=$('calcRows'),db=$('driverRows');
 
 function newRow(){
   const l=rows[rows.length-1];
@@ -353,15 +361,18 @@ function rowHTML(r,i){
      '<option value="o"'+(r.xeMode==='o'?' selected':'')+'>Khác…</option></select>'+
      '<input class="in c-xe'+(r.xeMode==='o'?'':' hidden')+'" type="text" maxlength="20" placeholder="Nhập số xe khác" value="'+(r.xeMode==='o'?esc(r.xe||''):'')+'"></td>'+
    '<td class="td-x"><button class="x" title="Xóa dòng">✕</button></td></tr>'+
-   '<tr class="drow" data-r="'+i+'"><td colspan="7"><div class="dgrid">'+
-     dfield('Tên tài xế','c-tx',r.taixe,'Tên tài xế')+
-     dfield('Số phiếu','c-ph',r.phieu,'VD 16187','numeric')+
-     dfield('Số hóa đơn','c-hd',r.hd,'VD 00132757','numeric')+
-     dfield('Số menter (đầu)','c-md',r.mdau,'0','numeric')+
-     dfield('Số menter (cuối)','c-mc',r.mcuoi,'0','numeric')+
-     '<div class="dkm"><label>Số km</label><b class="c-km">—</b></div>'+
-     '<div class="dseller"></div></div></td></tr>'+
    '<tr class="nrow hidden" data-r="'+i+'"><td colspan="7" class="cnote"></td></tr>';
+}
+function driverHTML(r,i){
+  return '<tr class="drow" data-r="'+i+'">'+
+   '<td class="dnum">'+(i+1)+'</td>'+
+   '<td data-l="Tên tài xế">'+dfield('','c-tx',r.taixe,'Tên tài xế').replace('<label></label>','')+'</td>'+
+   '<td data-l="Số phiếu">'+dfield('','c-ph',r.phieu,'VD 16187','numeric').replace('<label></label>','')+'</td>'+
+   '<td data-l="Số hóa đơn">'+dfield('','c-hd',r.hd,'VD 00132757','numeric').replace('<label></label>','')+'</td>'+
+   '<td data-l="Số menter (đầu)">'+dfield('','c-md',r.mdau,'0','numeric').replace('<label></label>','')+'</td>'+
+   '<td data-l="Số menter (cuối)">'+dfield('','c-mc',r.mcuoi,'0','numeric').replace('<label></label>','')+'</td>'+
+   '<td class="dkm" data-l="Số km"><b class="c-km">—</b></td>'+
+   '<td class="dseller" data-l="Bên bán"></td></tr>';
 }
 function readPrice(inp){
   const raw=inp.value,digits=raw.replace(/\D/g,'');
@@ -377,9 +388,10 @@ function readPrice(inp){
   }
   return digits===''?null:Number(digits);
 }
+function driverRow(main){return db.querySelector('tr[data-r="'+main.dataset.i+'"]');}
 function refreshRow(tr,setPrice){
   const r=rows[+tr.dataset.i];if(!r)return;
-  const dr=tr.nextElementSibling,nr=dr.nextElementSibling;
+  const dr=driverRow(tr),nr=tr.nextElementSibling;
   const rg=rowRegion(r);
   const tp=tablePrice(r.date,r.key,rg);
   const price=r.price!=null?r.price:tp.v;
@@ -443,8 +455,9 @@ function renderParties(){
   $('parties').innerHTML=h;
 }
 function renderCalc(){
-  $('calcRegion').textContent=rgName(region());
+  
   cb.innerHTML=rows.map(rowHTML).join('');
+  db.innerHTML=rows.map(driverHTML).join('');
   cb.querySelectorAll('tr[data-i]').forEach(tr=>refreshRow(tr,true));
   totals();renderParties();
 }
@@ -453,7 +466,7 @@ function ownerRow(el){
   const i=tr.dataset.i!=null?tr.dataset.i:tr.dataset.r;
   return i==null?null:cb.querySelector('tr[data-i="'+i+'"]');
 }
-cb.addEventListener('input',e=>{
+[cb,db].forEach(box=>box.addEventListener('input',e=>{
   const main=ownerRow(e.target);if(!main)return;
   const r=rows[+main.dataset.i],c=e.target.classList;
   if(c.contains('c-lit'))r.liters=e.target.value;
@@ -469,8 +482,8 @@ cb.addEventListener('input',e=>{
   }
   else return;
   totals();saveRows();
-});
-cb.addEventListener('change',e=>{
+}));
+[cb,db].forEach(box=>box.addEventListener('change',e=>{
   const main=ownerRow(e.target);if(!main)return;
   const r=rows[+main.dataset.i],c=e.target.classList;
   if(c.contains('c-xesel')){
@@ -478,7 +491,7 @@ cb.addEventListener('change',e=>{
     if(v==='o'){r.xeMode='o';r.xe='';r.taixe='';}
     else{r.xeMode='k';r.xe=v;r.taixe=driverOf(v);}
     inp.classList.toggle('hidden',v!=='o');inp.value='';
-    main.nextElementSibling.querySelector('.c-tx').value=r.taixe;
+    driverRow(main).querySelector('.c-tx').value=r.taixe;
     r.price=null;
     if(v==='o')inp.focus();
     refreshRow(main,true);totals();renderParties();saveRows();return;
@@ -487,7 +500,7 @@ cb.addEventListener('change',e=>{
   else if(c.contains('c-key')){r.key=e.target.value;r.price=null;}
   else if(!c.contains('c-price'))return;
   refreshRow(main,true);totals();saveRows();
-});
+}));
 cb.addEventListener('click',e=>{
   const b=e.target.closest('button.x');if(!b)return;
   rows.splice(+b.closest('tr').dataset.i,1);
