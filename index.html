@@ -13,7 +13,7 @@
 .status{margin:23px 0 16px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0}.controls label{color:var(--muted);font-weight:700}select,input[type=date]{background:#142238;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:15px;font-family:inherit;color-scheme:dark}
 .datebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 6px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:13px}
-.datebar .sp{flex:1}.datebar button{padding:9px 13px}
+.datebar .sp{flex:1}.datebar .vsep{width:1px;height:32px;background:var(--line);margin:0 8px}@media(max-width:760px){.datebar .vsep{display:none}}.datebar button{padding:9px 13px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}.card{background:linear-gradient(145deg,#172941,#101b2d);border:1px solid var(--line);border-radius:17px;padding:20px;min-height:155px}.label{color:var(--muted);font-size:13px;font-weight:700}.price{font-size:32px;font-weight:850;letter-spacing:-1px;margin:13px 0 2px}.unit{font-size:12px;color:var(--muted)}
 .badge{display:inline-block;border-radius:20px;padding:4px 9px;font-size:11px;font-weight:800;background:#183d37;color:var(--green);margin-top:10px}.badge.up{background:#412127;color:var(--red)}.badge.down{background:#183d37;color:var(--green)}.badge.flat,.badge.na{background:#222f45;color:var(--muted)}
 .section{margin-top:28px}.section h2{font-size:19px;margin:0 0 10px}
@@ -86,9 +86,11 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
 <div class="actions"><button class="primary" id="refresh">↻ Tải lại dữ liệu</button><a class="btn" href="https://www.petrolimex.com.vn/" target="_blank" rel="noopener">Petrolimex ↗</a></div></div>
 <div class="status"><span id="state"></span><span id="updated"></span></div>
 
-<div class="controls"><label for="region">Khu vực giá:</label><select id="region"><option value="v1">Vùng 1</option><option value="v2">Vùng 2</option></select><span class="muted" style="font-size:13px">Giá tham khảo theo bảng công bố Petrolimex</span></div>
 
-<div class="datebar">
+<div class="datebar" title="Giá tham khảo theo bảng công bố Petrolimex">
+ <label for="region" class="muted" style="font-weight:700">Khu vực giá:</label>
+ <select id="region"><option value="v1">Vùng 1</option><option value="v2">Vùng 2</option></select>
+ <span class="vsep"></span>
  <label for="day" class="muted" style="font-weight:700">Chọn ngày:</label>
  <button id="prev" title="Ngày trước">‹</button>
  <input type="date" id="day">
