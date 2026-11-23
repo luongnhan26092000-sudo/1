@@ -28,7 +28,8 @@ tbody tr{border-bottom:1px solid #1d2d45}tbody tr:last-child{border-bottom:0}tbo
 .hidden{display:none}
 td.est,.price.est{color:#e7c27d}.price.est{font-size:28px}
 .in{background:#142238;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;color-scheme:dark;width:100%;min-width:90px}
-.in.c-date{min-width:150px}.in.c-key{min-width:150px}.in.c-lit,.in.c-price{text-align:right}
+.in.c-date{min-width:150px}.in.c-key{min-width:210px}.in.c-xe{min-width:130px;text-transform:uppercase}.in.c-xesel{min-width:150px}
+td.xecell{text-align:left;min-width:160px}td.xecell .c-xe{margin-top:6px}.in.c-lit,.in.c-price{text-align:right}
 .in.est{color:#e7c27d}.in.diff{border-color:#e7c27d;background:#2a2113}
 .calcbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}.calcbar button{padding:9px 14px}
 td.cnote{color:var(--muted);font-size:12px;white-space:normal;min-width:200px;text-align:left}
@@ -62,9 +63,9 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
 
 <div class="section" id="calc"><h2>Tính tiền theo số lít</h2>
 <div class="muted" style="font-size:13px;margin-bottom:10px">Đang tính theo giá <b id="calcRegion">Vùng 1</b> (đổi ở ô “Khu vực giá” phía trên). Đơn giá tự điền theo ngày và loại dầu; nếu phiếu ghi giá khác, sửa ô “Đơn giá” và trang sẽ báo lệch so với bảng giá. Dữ liệu nhập được lưu trên máy bạn.</div>
-<div class="tblwrap"><table><thead><tr><th>Ngày</th><th>Loại dầu</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th>Ghi chú</th><th></th></tr></thead>
+<div class="tblwrap"><table><thead><tr><th>Ngày</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th>Số xe</th><th>Ghi chú</th><th></th></tr></thead>
 <tbody id="calcRows"></tbody>
-<tfoot><tr><td colspan="2">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td colspan="2" class="cnote" id="sumNote"></td></tr></tfoot></table></div>
+<tfoot><tr><td colspan="2">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td></td><td colspan="2" class="cnote" id="sumNote"></td></tr></tfoot></table></div>
 <div class="calcbar"><button id="addRow">+ Thêm dòng</button><button id="copyRes">Sao chép (dán vào Excel)</button><button id="clearRows">Xóa hết</button><span class="muted" id="calcMsg" style="font-size:13px"></span></div></div>
 
 <div class="section" id="intraBox"><h2>Diễn biến trong ngày</h2>
@@ -217,9 +218,18 @@ $('today').addEventListener('click',()=>setDay(lastData));
 $('hist').addEventListener('click',e=>{const tr=e.target.closest('tr[data-d]');if(tr)setDay(tr.dataset.d);});
 /* ===== Tính tiền theo số lít ===== */
 const CALC_KEY='diesel_calc_rows_v1';
-const KEYNAME={do:'Diesel 0,05S-II',do001:'Diesel 0,001S-V'};
+const XE_LIST=['50LD-19478','50LD-20236'];   // 2 xe như trên phiếu; mục 3 = Khác (tự nhập)
+const KEYNAME={do:'Dầu Điêzen 0,05S Mức 2',do001:'Dầu Điêzen 0,001S Mức 5'};   // tên hàng ghi như trên phiếu
 const num=v=>{const n=parseFloat(v);return isFinite(n)?n:null;};
 const vn=n=>n.toLocaleString('vi-VN');
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function xeModeOf(x){
+  if(x.xeMode==='a'||x.xeMode==='b'||x.xeMode==='o')return x.xeMode;
+  const v=String(x.xe||'').toUpperCase();
+  if(v===XE_LIST[0]||!v)return 'a';
+  if(v===XE_LIST[1])return 'b';
+  return 'o';
+}
 function loadRows(){
   try{
     const r=JSON.parse(localStorage.getItem(CALC_KEY)||'null');
@@ -227,18 +237,20 @@ function loadRows(){
       date:/^\d{4}-\d{2}-\d{2}$/.test(x.date)?x.date:lastData,
       key:x.key==='do001'?'do001':'do',
       liters:x.liters==null?'':String(x.liters).replace(/[^0-9.]/g,''),
-      price:num(x.price)}));
+      price:num(x.price),
+      xe:x.xe==null?'':String(x.xe).slice(0,20),
+      xeMode:xeModeOf(x)}));
   }catch(e){}
   return null;
 }
 function saveRows(){try{localStorage.setItem(CALC_KEY,JSON.stringify(rows));}catch(e){}}
-let rows=loadRows()||[{date:sel,key:'do',liters:'',price:null}];
+let rows=loadRows()||[{date:sel,key:'do',liters:'',price:null,xe:XE_LIST[0],xeMode:'a'}];
 let sumL=0,sumA=0;
 const cb=$('calcRows');
 
 function newRow(){
   const l=rows[rows.length-1];
-  return {date:l?l.date:sel,key:l?l.key:'do',liters:'',price:null};
+  return {date:l?l.date:sel,key:l?l.key:'do',liters:'',price:null,xe:l?l.xe:XE_LIST[0],xeMode:l?l.xeMode:'a'};
 }
 function tablePrice(date,key){
   if(date>DATA_THROUGH)return{v:null,est:false,before:null,change:null};
@@ -253,7 +265,13 @@ function rowHTML(r,i){
    '<td><select class="in c-key"><option value="do"'+(r.key==='do'?' selected':'')+'>'+KEYNAME.do+'</option><option value="do001"'+(r.key==='do001'?' selected':'')+'>'+KEYNAME.do001+'</option></select></td>'+
    '<td><input class="in c-lit" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="'+r.liters+'"></td>'+
    '<td><input class="in c-price" type="number" inputmode="numeric" min="0" step="10" value=""></td>'+
-   '<td class="c-total">—</td><td class="cnote"></td>'+
+   '<td class="c-total">—</td>'+
+   '<td class="xecell"><select class="in c-xesel">'+
+     '<option value="a"'+(r.xeMode==='a'?' selected':'')+'>'+XE_LIST[0]+'</option>'+
+     '<option value="b"'+(r.xeMode==='b'?' selected':'')+'>'+XE_LIST[1]+'</option>'+
+     '<option value="o"'+(r.xeMode==='o'?' selected':'')+'>Khác…</option></select>'+
+     '<input class="in c-xe'+(r.xeMode==='o'?'':' hidden')+'" type="text" maxlength="20" placeholder="Nhập số xe khác" value="'+(r.xeMode==='o'?esc(r.xe||''):'')+'"></td>'+
+   '<td class="cnote"></td>'+
    '<td><button class="x" title="Xóa dòng">✕</button></td></tr>';
 }
 function refreshRow(tr,setPrice){
@@ -302,11 +320,21 @@ cb.addEventListener('input',e=>{
   const tr=e.target.closest('tr');if(!tr)return;const r=rows[+tr.dataset.i];
   if(e.target.classList.contains('c-lit'))r.liters=e.target.value;
   else if(e.target.classList.contains('c-price'))r.price=e.target.value===''?null:num(e.target.value);
+  else if(e.target.classList.contains('c-xe')){r.xe=e.target.value;saveRows();return;}
   else return;
   totals();saveRows();
 });
 cb.addEventListener('change',e=>{
   const tr=e.target.closest('tr');if(!tr)return;const r=rows[+tr.dataset.i];
+  if(e.target.classList.contains('c-xesel')){
+    const m=e.target.value,inp=tr.querySelector('.c-xe');
+    r.xeMode=m;
+    r.xe=m==='a'?XE_LIST[0]:m==='b'?XE_LIST[1]:'';
+    inp.classList.toggle('hidden',m!=='o');
+    inp.value='';
+    if(m==='o')inp.focus();
+    saveRows();return;
+  }
   if(e.target.classList.contains('c-date')){if(!e.target.value)return;r.date=e.target.value;r.price=null;}
   else if(e.target.classList.contains('c-key')){r.key=e.target.value;r.price=null;}
   else if(!e.target.classList.contains('c-price'))return;
@@ -320,14 +348,14 @@ cb.addEventListener('click',e=>{
 });
 function calcMsg(t){$('calcMsg').textContent=t;setTimeout(()=>{$('calcMsg').textContent='';},3500);}
 $('addRow').addEventListener('click',()=>{rows.push(newRow());saveRows();renderCalc();});
-$('clearRows').addEventListener('click',()=>{rows=[newRow()];rows[0].date=sel;saveRows();renderCalc();});
+$('clearRows').addEventListener('click',()=>{rows=[newRow()];rows[0].date=sel;rows[0].xe=XE_LIST[0];rows[0].xeMode='a';saveRows();renderCalc();});
 $('copyRes').addEventListener('click',()=>{
-  const L=[['Ngày','Loại dầu','Số lít','Đơn giá','Thành tiền'].join('\t')];
+  const L=[['Ngày','Tên hàng','Số lít','Đơn giá','Thành tiền','Số xe'].join('\t')];
   cb.querySelectorAll('tr').forEach(tr=>{
     const r=rows[+tr.dataset.i];
-    L.push([fmtVN(r.date),KEYNAME[r.key],tr._lit==null?'':tr._lit,tr._price==null?'':tr._price,tr._tot==null?'':tr._tot].join('\t'));
+    L.push([fmtVN(r.date),KEYNAME[r.key],tr._lit==null?'':tr._lit,tr._price==null?'':tr._price,tr._tot==null?'':tr._tot,(r.xe||'').toUpperCase()].join('\t'));
   });
-  L.push(['Tổng','',sumL,'',sumA].join('\t'));
+  L.push(['Tổng','',sumL,'',sumA,''].join('\t'));
   const txt=L.join('\n');
   (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject())
     .then(()=>calcMsg('Đã sao chép, dán vào Excel được.'))
