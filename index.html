@@ -311,7 +311,7 @@ function rowHTML(r,i){
    '<td data-l="Ngày"><input class="in c-date" type="date" min="'+minD+'" max="'+maxD+'" value="'+r.date+'"></td>'+
    '<td data-l="Tên hàng"><select class="in c-key"><option value="do"'+(r.key==='do'?' selected':'')+'>'+KEYNAME.do+'</option><option value="do001"'+(r.key==='do001'?' selected':'')+'>'+KEYNAME.do001+'</option></select></td>'+
    '<td data-l="Số lít"><input class="in c-lit" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="'+r.liters+'"></td>'+
-   '<td data-l="Đơn giá (đ/lít)"><input class="in c-price" type="number" inputmode="numeric" min="0" step="10" value=""></td>'+
+   '<td data-l="Đơn giá (đ/lít)"><input class="in c-price" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value=""></td>'+
    '<td data-l="Thành tiền" class="c-total">—</td>'+
    '<td data-l="Số xe" class="xecell"><select class="in c-xesel">'+
      '<option value="a"'+(r.xeMode==='a'?' selected':'')+'>'+XE_LIST[0]+'</option>'+
@@ -321,12 +321,26 @@ function rowHTML(r,i){
    '<td class="td-x"><button class="x" title="Xóa dòng">✕</button></td></tr>'+
    '<tr class="nrow hidden"><td colspan="7" class="cnote"></td></tr>';
 }
+function readPrice(inp){
+  const raw=inp.value,digits=raw.replace(/\D/g,'');
+  let pos=null;try{pos=inp.selectionStart;}catch(e){}
+  const f=digits===''?'':vn(Number(digits));
+  if(f!==raw){
+    inp.value=f;
+    if(pos!=null){
+      const before=raw.slice(0,pos).replace(/\D/g,'').length;
+      let c=0,i=0;for(;i<f.length&&c<before;i++){if(/\d/.test(f[i]))c++;}
+      try{inp.setSelectionRange(i,i);}catch(e){}
+    }
+  }
+  return digits===''?null:Number(digits);
+}
 function refreshRow(tr,setPrice){
   const r=rows[+tr.dataset.i];if(!r)return;
   const tp=tablePrice(r.date,r.key);
   const price=r.price!=null?r.price:tp.v;
   const pin=tr.querySelector('.c-price');
-  if(setPrice)pin.value=price==null?'':price;
+  if(setPrice)pin.value=price==null?'':vn(Math.round(price));
   pin.classList.toggle('est',r.price==null&&tp.est);
   const diff=r.price!=null&&tp.v!=null&&r.price!==tp.v;
   pin.classList.toggle('diff',diff);
@@ -367,7 +381,7 @@ function renderCalc(){
 cb.addEventListener('input',e=>{
   const tr=e.target.closest('tr');if(!tr)return;const r=rows[+tr.dataset.i];
   if(e.target.classList.contains('c-lit'))r.liters=e.target.value;
-  else if(e.target.classList.contains('c-price'))r.price=e.target.value===''?null:num(e.target.value);
+  else if(e.target.classList.contains('c-price'))r.price=readPrice(e.target);
   else if(e.target.classList.contains('c-xe')){r.xe=e.target.value;saveRows();return;}
   else return;
   totals();saveRows();
