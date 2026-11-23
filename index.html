@@ -29,6 +29,26 @@ tbody tr{border-bottom:1px solid #1d2d45}tbody tr:last-child{border-bottom:0}tbo
 td.est,.price.est{color:#e7c27d}.price.est{font-size:28px}
 .in{background:#142238;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font:inherit;font-size:14px;color-scheme:dark;width:100%;min-width:0}
 .in.c-xe{text-transform:uppercase}
+/* ===== nổi bật ===== */
+.section h2{border-left:4px solid var(--blue);padding-left:10px}
+b.hl{color:#fff;font-size:16px}b.hl2{color:#cfe3ff}b.hl3{color:#f0d9a8}
+.card{border-left-width:5px}
+.card.c1{border-left-color:var(--blue)}.card.c2{border-left-color:var(--green)}
+.card .price{font-size:clamp(34px,5vw,46px)}
+.card.c1 .price:not(.est){color:#8cc8ff}.card.c2 .price:not(.est){color:#6ee8bd}
+.rg{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:20px;background:#1e3f6b;color:#9fd0ff;font-size:11px;font-weight:800;vertical-align:middle}
+#calc{background:linear-gradient(145deg,#172941,#101b2d);border:1px solid #3a6aa8;border-radius:18px;padding:20px;box-shadow:0 0 0 3px rgba(88,168,255,.10),0 12px 32px rgba(0,0,0,.28)}
+#calc h2{font-size:23px}
+.calcintro{font-size:14px;margin:0 0 14px;color:#cfdcf2}.calcintro b{color:#fff}.calcintro .rg{margin-left:2px;font-size:12px}
+.in.c-lit{border-color:#3d7bc4;background:#1a3050;font-weight:700}
+.in:focus{outline:2px solid var(--blue);outline-offset:1px}
+td.c-total{color:#6ee8bd;font-size:15px}
+#calc tfoot td{background:#12304a;padding-top:12px;padding-bottom:12px}
+#sumLit{font-size:17px;color:#8cc8ff}#sumAmt{font-size:22px;color:#6ee8bd}
+#calc tr.nrow.warnrow td{background:#2a2113;color:#f5dfae;font-size:13px;font-weight:600;border-radius:0 0 10px 10px}
+#addRow{background:var(--blue);color:#071322;border-color:var(--blue)}
+#clearRows{color:var(--red)}
+tbody tr.sel{background:#23406b;font-weight:800}
 td.xecell{text-align:left}td.xecell .c-xe{margin-top:6px}.in.c-lit,.in.c-price{text-align:right}
 .in.est{color:#e7c27d}.in.diff{border-color:#e7c27d;background:#2a2113}
 .calcbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}.calcbar button{padding:9px 14px}
@@ -81,12 +101,12 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
 <div id="warn" class="warn hidden"></div>
 
 <div class="grid" id="cards">
-<div class="card"><div class="label">Dầu Diesel 0,05S-II</div><div class="price" id="do">—</div><div class="unit">đồng/lít</div><div class="badge" id="b_do"></div></div>
-<div class="card"><div class="label">Dầu Diesel 0,001S-V</div><div class="price" id="do001">—</div><div class="unit">đồng/lít</div><div class="badge" id="b_do001"></div></div>
+<div class="card c1"><div class="label">Dầu Diesel 0,05S-II <span class="rg"></span></div><div class="price" id="do">—</div><div class="unit">đồng/lít</div><div class="badge" id="b_do"></div></div>
+<div class="card c2"><div class="label">Dầu Diesel 0,001S-V <span class="rg"></span></div><div class="price" id="do001">—</div><div class="unit">đồng/lít</div><div class="badge" id="b_do001"></div></div>
 </div>
 
 <div class="section" id="calc"><h2>Tính tiền theo số lít</h2>
-<div class="muted" style="font-size:13px;margin-bottom:10px">Đang tính theo giá <b id="calcRegion">Vùng 1</b> (đổi ở ô “Khu vực giá” phía trên). Đơn giá tự điền theo ngày và loại dầu; nếu phiếu ghi giá khác, sửa ô “Đơn giá” và trang sẽ báo lệch so với bảng giá. Dữ liệu nhập được lưu trên máy bạn.</div>
+<div class="calcintro">Đang tính theo giá <b id="calcRegion" class="rg">Vùng 1</b> <span class="muted">(đổi ở ô “Khu vực giá” phía trên)</span>. <b>Chỉ cần nhập số lít</b>, đơn giá tự điền theo ngày và loại dầu. Phiếu ghi giá khác thì sửa ô “Đơn giá”, trang sẽ <b class="hl3">báo lệch</b> so với bảng giá.</div>
 <div class="tblwrap"><table class="ctab"><colgroup><col style="width:15%"><col style="width:22%"><col style="width:9%"><col style="width:12%"><col style="width:15%"><col style="width:20%"><col style="width:7%"></colgroup><thead><tr><th>Ngày</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th>Số xe</th><th></th></tr></thead>
 <tbody id="calcRows"></tbody>
 <tfoot><tr><td colspan="2">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td colspan="2" class="cnote" id="sumNote"></td></tr></tfoot></table></div>
@@ -177,6 +197,7 @@ function render(){
   $('prev').disabled=sel<=minD;$('next').disabled=sel>=maxD;
   $('range').textContent='Xem được từ '+fmtVN(minD)+' đến '+fmtVN(maxD);
 
+  document.querySelectorAll('.rg').forEach(e=>{e.textContent=region()==='v1'?'Vùng 1':'Vùng 2';});
   const noData=sel>DATA_THROUGH;
   const w=$('warn');
   if(noData){
@@ -198,7 +219,7 @@ function render(){
   if(noData){$('state').textContent='Không có dữ liệu giá cho ngày '+fmtVN(sel)+'.';}
   else if(cur){
     const f=cur.from.split('T');
-    $('state').textContent='Giá ngày '+fmtVN(sel)+(sel===today?' (hôm nay)':'')+' • Kỳ điều hành có hiệu lực từ '+f[1]+' ngày '+fmtVN(f[0])+'.';
+    $('state').innerHTML='Giá ngày <b class="hl">'+fmtVN(sel)+(sel===today?' (hôm nay)':'')+'</b> • Kỳ điều hành có hiệu lực từ <b class="hl2">'+f[1]+' ngày '+fmtVN(f[0])+'</b>.';
   }
 
   // diễn biến trong ngày
@@ -321,7 +342,7 @@ function refreshRow(tr,setPrice){
   }
   if(tp.change)n.push('Ngày này đổi giá lúc '+tp.change+(tp.before!=null?' (trước đó '+vn(tp.before)+' đ)':'')+'; đang lấy giá sau điều chỉnh.');
   const nr=tr.nextElementSibling;
-  if(nr){const t=n.join(' ');nr.firstElementChild.textContent=t;nr.classList.toggle('hidden',!t);}
+  if(nr){const t=n.join(' ');nr.firstElementChild.textContent=t;nr.classList.toggle('hidden',!t);nr.classList.toggle('warnrow',!!diff);}
 }
 function totals(){
   let sl=0,sa=0,miss=0;
