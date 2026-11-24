@@ -3,31 +3,31 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Giá dầu diesel Việt Nam</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%230b1220%27/%3E%3Ctext x=%2750%27 y=%2772%27 font-size=%2762%27 text-anchor=%27middle%27%3E%E2%9B%BD%3C/text%3E%3C/svg%3E">
-<meta name="theme-color" content="#0b1220">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%23000000%27/%3E%3Ctext x=%2750%27 y=%2772%27 font-size=%2762%27 text-anchor=%27middle%27%3E%E2%9B%BD%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#000000">
 <style>
-:root{--bg:#0b1220;--panel:#142238;--line:#2a3d59;--text:#eef4ff;--muted:#9aacc7;--blue:#58a8ff;--green:#42d6a0;--red:#ff7a7a}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 12% 0%,#1a3151 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",Arial,sans-serif}
+:root{--bg:#000000;--panel:#0e0e10;--line:#3a3d42;--text:#ffffff;--muted:#c4c9d0;--blue:#58a8ff;--green:#42d6a0;--red:#ff7a7a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",Arial,sans-serif}
 .wrap{max-width:1100px;margin:38px auto;padding:0 20px}.top{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}.brand{font-size:12px;letter-spacing:2px;color:var(--blue);font-weight:800}.title{font-size:clamp(28px,4vw,42px);font-weight:850;margin:5px 0}.sub,.muted{color:var(--muted)}
-.actions{display:flex;gap:10px;flex-wrap:wrap}button,a.btn{border:1px solid var(--line);border-radius:11px;padding:11px 16px;background:#1a2b45;color:var(--text);font-weight:700;text-decoration:none;cursor:pointer;font-size:15px}button:disabled{opacity:.35;cursor:not-allowed}button.primary{background:var(--blue);color:#071322;border-color:var(--blue)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}button,a.btn{border:1px solid var(--line);border-radius:11px;padding:11px 16px;background:#1c1d20;color:var(--text);font-weight:700;text-decoration:none;cursor:pointer;font-size:15px}button:disabled{opacity:.35;cursor:not-allowed}button.primary{background:var(--blue);color:#071322;border-color:var(--blue)}
 .status{margin:23px 0 16px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0}.controls label{color:var(--muted);font-weight:700}select,input[type=date]{background:#142238;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:15px;font-family:inherit;color-scheme:dark}
+.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0}.controls label{color:var(--muted);font-weight:700}select,input[type=date]{background:#050506;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:15px;font-family:inherit;color-scheme:dark}
 .datebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 6px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:13px}
 .datebar .sp{flex:1}.datebar .vsep{width:1px;height:32px;background:var(--line);margin:0 8px}@media(max-width:760px){.datebar .vsep{display:none}}.datebar button{padding:9px 13px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}.card{background:linear-gradient(145deg,#172941,#101b2d);border:1px solid var(--line);border-radius:17px;padding:20px;min-height:155px}.label{color:var(--muted);font-size:13px;font-weight:700}.price{font-size:32px;font-weight:850;letter-spacing:-1px;margin:13px 0 2px}.unit{font-size:12px;color:var(--muted)}
-.badge{display:inline-block;border-radius:20px;padding:4px 9px;font-size:11px;font-weight:800;background:#183d37;color:var(--green);margin-top:10px}.badge.up{background:#412127;color:var(--red)}.badge.down{background:#183d37;color:var(--green)}.badge.flat,.badge.na{background:#222f45;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}.card{background:linear-gradient(145deg,#121315,#0a0a0b);border:1px solid var(--line);border-radius:17px;padding:20px;min-height:155px}.label{color:var(--muted);font-size:13px;font-weight:700}.price{font-size:32px;font-weight:850;letter-spacing:-1px;margin:13px 0 2px}.unit{font-size:12px;color:var(--muted)}
+.badge{display:inline-block;border-radius:20px;padding:4px 9px;font-size:11px;font-weight:800;background:#1b3a32;color:var(--green);margin-top:10px}.badge.up{background:#412127;color:var(--red)}.badge.down{background:#1b3a32;color:var(--green)}.badge.flat,.badge.na{background:#222428;color:var(--muted)}
 .section{margin-top:28px}.section h2{font-size:19px;margin:0 0 10px}
 .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:13px;background:var(--panel)}
-table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:10px 14px;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-size:12px;font-weight:800;border-bottom:1px solid var(--line);background:#101b2d;position:sticky;top:0}
-tbody tr{border-bottom:1px solid #1d2d45}tbody tr:last-child{border-bottom:0}tbody tr.pick{cursor:pointer}tbody tr.pick:hover{background:#1a2b45}tbody tr.sel{background:#1e3556;box-shadow:inset 3px 0 0 var(--blue)}
-.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--blue);margin-left:6px;vertical-align:middle}.na{color:#5f7392}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:10px 14px;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-size:12px;font-weight:800;border-bottom:1px solid var(--line);background:#0a0a0b;position:sticky;top:0}
+tbody tr{border-bottom:1px solid #222428}tbody tr:last-child{border-bottom:0}tbody tr.pick{cursor:pointer}tbody tr.pick:hover{background:#1c1d20}tbody tr.sel{background:#1d2530;box-shadow:inset 3px 0 0 var(--blue)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--blue);margin-left:6px;vertical-align:middle}.na{color:#8d96a3}
 .scroll{max-height:460px;overflow-y:auto}
-.note{background:#171f2e;border:1px solid #5c4827;color:#e7d2a8;padding:15px;border-radius:12px;font-size:13px}.note p{margin:0 0 8px}.note p:last-child{margin:0}
+.note{background:#16130d;border:1px solid #5c4827;color:#e7d2a8;padding:15px;border-radius:12px;font-size:13px}.note p{margin:0 0 8px}.note p:last-child{margin:0}
 .warn{background:#2a2113;border:1px solid #6b5120;color:#f0d9a8;padding:12px 15px;border-radius:12px;font-size:13px;margin-top:14px}
 .source{margin-top:12px}.source a{color:#82baff}.footer{margin:28px 0;color:var(--muted);font-size:12px}
 .hidden{display:none}
 td.est,.price.est{color:#e7c27d}.price.est{font-size:28px}
-.in{background:#142238;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font:inherit;font-size:14px;color-scheme:dark;width:100%;min-width:0}
+.in{background:#050506;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font:inherit;font-size:14px;color-scheme:dark;width:100%;min-width:0}
 .in.c-xe{text-transform:uppercase}
 /* ===== nổi bật ===== */
 .section h2{border-left:4px solid var(--blue);padding-left:10px}
@@ -37,23 +37,23 @@ b.hl{color:#fff;font-size:16px}b.hl2{color:#cfe3ff}b.hl3{color:#f0d9a8}
 .card .price{font-size:clamp(34px,5vw,46px)}
 .card.c1 .price:not(.est){color:#8cc8ff}.card.c2 .price:not(.est){color:#6ee8bd}
 .rg{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:20px;background:#1e3f6b;color:#9fd0ff;font-size:11px;font-weight:800;vertical-align:middle}
-#calc{background:linear-gradient(145deg,#172941,#101b2d);border:1px solid #3a6aa8;border-radius:18px;padding:20px;box-shadow:0 0 0 3px rgba(88,168,255,.10),0 12px 32px rgba(0,0,0,.28)}
+#calc{background:linear-gradient(145deg,#121315,#0a0a0b);border:1px solid #3a6aa8;border-radius:18px;padding:20px;box-shadow:0 0 0 3px rgba(88,168,255,.10),0 12px 32px rgba(0,0,0,.28)}
 #calc h2{font-size:23px}
-.calcintro{font-size:14px;margin:0 0 14px;color:#cfdcf2}.calcintro b{color:#fff}.calcintro .rg{margin-left:2px;font-size:12px}
-.in.c-lit{border-color:#3d7bc4;background:#1a3050;font-weight:700}
+.calcintro{font-size:14px;margin:0 0 14px;color:#eceff3}.calcintro b{color:#fff}.calcintro .rg{margin-left:2px;font-size:12px}
+.in.c-lit{border-color:#3d7bc4;background:#101a24;font-weight:700}
 .in:focus{outline:2px solid var(--blue);outline-offset:1px}
 td.c-total{color:#6ee8bd;font-size:15px}
-#calc tfoot td{background:#12304a;padding-top:12px;padding-bottom:12px}
+#calc tfoot td{background:#14212b;padding-top:12px;padding-bottom:12px}
 #sumLit{font-size:17px;color:#8cc8ff}#sumAmt{font-size:22px;color:#6ee8bd}
 #calc tr.nrow.warnrow td{background:#2a2113;color:#f5dfae;font-size:13px;font-weight:600;border-radius:0 0 10px 10px}
 #addRow{background:var(--blue);color:#071322;border-color:var(--blue)}
 #clearRows{color:var(--red)}
-tbody tr.sel{background:#23406b;font-weight:800}
+tbody tr.sel{background:#243246;font-weight:800}
 .parties{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:14px}
-.party{background:#101b2d;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5}
+.party{background:#0a0a0b;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5}
 .party.seller{border-left-color:var(--green)}
 .party h4{margin:0 0 4px;font-size:11px;letter-spacing:1px;color:var(--muted);font-weight:800}
-.party b{display:block;font-size:14px;color:#fff;margin-bottom:2px}.party .m{color:#cfdcf2}
+.party b{display:block;font-size:14px;color:#fff;margin-bottom:2px}.party .m{color:#eceff3}
 .dkm b{display:block;font-size:15px;color:#9fd0ff}.dkm b.neg{color:var(--red)}
 .calcgap{height:18px}
 .subhead{margin:0 0 8px;font-size:13px;font-weight:800;letter-spacing:.5px;color:#9fd0ff;text-transform:uppercase}
@@ -61,8 +61,8 @@ tbody tr.sel{background:#23406b;font-weight:800}
 .dtab td.dkm,.dtab th.dkm{text-align:right}
 .dtab .in{padding:6px 8px;font-size:13px}
 .dtab td.dnum{color:var(--muted);font-weight:800}
-.dtab td.dseller{white-space:normal;font-size:12px;line-height:1.45;color:#9fb4d3}.dtab td.dseller b{color:#cfe3ff;font-size:12px}
-#calc #driverRows tr{border-top:1px solid #1d2d45}#calc #driverRows tr:first-child{border-top:0}
+.dtab td.dseller{white-space:normal;font-size:12px;line-height:1.45;color:#c9cfd8}.dtab td.dseller b{color:#cfe3ff;font-size:12px}
+#calc #driverRows tr{border-top:1px solid #222428}#calc #driverRows tr:first-child{border-top:0}
 td.xecell{text-align:left}.xeother{display:flex;gap:4px;align-items:center}.xeother.hidden{display:none}.xeother .c-xe{flex:1;min-width:0}.xeback{flex:none;padding:6px 9px;border-radius:8px;font-size:13px;line-height:1}.in.c-lit,.in.c-price{text-align:right}
 .in.est{color:#e7c27d}.in.diff{border-color:#e7c27d;background:#2a2113}
 .calcbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}.calcbar button{padding:9px 14px}
@@ -70,7 +70,7 @@ td.cnote{color:var(--muted);font-size:12px;white-space:normal;text-align:left}
 .ctab{table-layout:fixed}.ctab th,.ctab td{padding:8px}
 .ctab th:nth-child(1),.ctab th:nth-child(2),.ctab th:nth-child(6){text-align:left}
 .ctab td:nth-child(2){text-align:left}
-#calc tbody tr[data-i]{border-top:1px solid #1d2d45;border-bottom:0}
+#calc tbody tr[data-i]{border-top:1px solid #222428;border-bottom:0}
 #calc tbody tr:first-child{border-top:0}
 #calc tbody tr.nrow{border:0}
 #calc tr.nrow td{padding:0 12px 10px}
@@ -92,14 +92,14 @@ td.cnote{color:var(--muted);font-size:12px;white-space:normal;text-align:left}
  #calc .dtab td.dkm{text-align:left}
  #calc tr.nrow{display:block}
  #calc tr.nrow td{display:block;padding:0 12px 12px}
- #calc tfoot tr{display:flex;flex-wrap:wrap;gap:4px 16px;padding:12px;border-top:1px solid var(--line);background:#101b2d}
+ #calc tfoot tr{display:flex;flex-wrap:wrap;gap:4px 16px;padding:12px;border-top:1px solid var(--line);background:#0a0a0b}
  #calc tfoot td{padding:0;border:0;background:none}
  #calc tfoot td:empty{display:none}
  #calc tfoot td.cnote{flex-basis:100%}
 }
 button.x{padding:5px 9px;border-radius:8px;background:transparent}
 .c-total{font-weight:800}
-tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
+tfoot td{font-weight:800;border-top:1px solid var(--line);background:#0a0a0b}
 </style></head>
 <body><div class="wrap">
 <div class="top"><div><div class="brand">FUEL INTELLIGENCE • VIETNAM</div><div class="title">Giá dầu diesel theo ngày</div><div class="sub">Giá bán lẻ Petrolimex • Đơn vị: đồng/lít • Xem lại từ đầu tháng trước đến hôm nay</div></div>
