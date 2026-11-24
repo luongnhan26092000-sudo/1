@@ -132,7 +132,7 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
 <h3 class="subhead">Bảng 1 · Ngày &amp; nhiên liệu</h3><div class="tblwrap"><table class="ctab"><colgroup><col style="width:15%"><col style="width:22%"><col style="width:9%"><col style="width:12%"><col style="width:15%"><col style="width:20%"><col style="width:7%"></colgroup><thead><tr><th>Ngày</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th>Số xe</th><th></th></tr></thead>
 <tbody id="calcRows"></tbody>
 <tfoot><tr><td colspan="2">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td colspan="2" class="cnote" id="sumNote"></td></tr></tfoot></table></div>
-<div class="calcgap"></div><h3 class="subhead">Bảng 2 · Tài xế &amp; chứng từ</h3><div class="tblwrap"><table class="dtab"><colgroup><col style="width:4%"><col style="width:17%"><col style="width:11%"><col style="width:12%"><col style="width:11%"><col style="width:11%"><col style="width:9%"><col style="width:25%"></colgroup><thead><tr><th>#</th><th>Tên tài xế</th><th>Số phiếu</th><th>Số hóa đơn</th><th>Số menter (đầu)</th><th>Số menter (cuối)</th><th class="dkm">Số km</th><th>Bên bán</th></tr></thead><tbody id="driverRows"></tbody></table></div>
+<div class="calcgap"></div><h3 class="subhead">Bảng 2 · Tài xế &amp; chứng từ</h3><div class="tblwrap"><table class="dtab"><colgroup><col style="width:5%"><col style="width:25%"><col style="width:15%"><col style="width:17%"><col style="width:15%"><col style="width:15%"><col style="width:8%"></colgroup><thead><tr><th>#</th><th>Tên tài xế</th><th>Số phiếu</th><th>Số hóa đơn</th><th>Số menter (đầu)</th><th>Số menter (cuối)</th><th class="dkm">Số km</th></tr></thead><tbody id="driverRows"></tbody></table></div>
 <div class="calcbar"><button id="addRow">+ Thêm dòng</button><button id="copyRes">Sao chép (dán vào Excel)</button><button id="clearRows">Xóa hết</button><span class="muted" id="calcMsg" style="font-size:13px"></span></div></div>
 
 <div class="section" id="intraBox"><h2>Diễn biến trong ngày</h2>
@@ -371,8 +371,7 @@ function driverHTML(r,i){
    '<td data-l="Số hóa đơn">'+dfield('','c-hd',r.hd,'VD 00132757','numeric').replace('<label></label>','')+'</td>'+
    '<td data-l="Số menter (đầu)">'+dfield('','c-md',r.mdau,'0','numeric').replace('<label></label>','')+'</td>'+
    '<td data-l="Số menter (cuối)">'+dfield('','c-mc',r.mcuoi,'0','numeric').replace('<label></label>','')+'</td>'+
-   '<td class="dkm" data-l="Số km"><b class="c-km">—</b></td>'+
-   '<td class="dseller" data-l="Bên bán"></td></tr>';
+   '<td class="dkm" data-l="Số km"><b class="c-km">—</b></td></tr>';
 }
 function readPrice(inp){
   const raw=inp.value,digits=raw.replace(/\D/g,'');
@@ -413,7 +412,7 @@ function refreshRow(tr,setPrice){
   kb.classList.toggle('neg',km!=null&&km<0);
   // bên bán + vùng giá
   const info=XE_INFO[xeKey(r)];
-  dr.querySelector('.dseller').innerHTML=info
+  const ds=dr.querySelector('.dseller');if(ds)ds.innerHTML=info
     ?'Bên bán: <b>'+esc(SELLERS[info.seller].name)+'</b> · <span class="rg">'+rgName(rg)+'</span>'
     :'Xe khác: đang dùng <span class="rg">'+rgName(rg)+'</span> (ô “Khu vực giá” phía trên).';
   // ghi chú
