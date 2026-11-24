@@ -63,7 +63,7 @@ tbody tr.sel{background:#23406b;font-weight:800}
 .dtab td.dnum{color:var(--muted);font-weight:800}
 .dtab td.dseller{white-space:normal;font-size:12px;line-height:1.45;color:#9fb4d3}.dtab td.dseller b{color:#cfe3ff;font-size:12px}
 #calc #driverRows tr{border-top:1px solid #1d2d45}#calc #driverRows tr:first-child{border-top:0}
-td.xecell{text-align:left}td.xecell .c-xe{margin-top:6px}.in.c-lit,.in.c-price{text-align:right}
+td.xecell{text-align:left}.xeother{display:flex;gap:4px;align-items:center}.xeother.hidden{display:none}.xeother .c-xe{flex:1;min-width:0}.xeback{flex:none;padding:6px 9px;border-radius:8px;font-size:13px;line-height:1}.in.c-lit,.in.c-price{text-align:right}
 .in.est{color:#e7c27d}.in.diff{border-color:#e7c27d;background:#2a2113}
 .calcbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}.calcbar button{padding:9px 14px}
 td.cnote{color:var(--muted);font-size:12px;white-space:normal;text-align:left}
@@ -128,7 +128,6 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#101b2d}
 </div>
 
 <div class="section" id="calc"><h2>Tính tiền theo số lít</h2>
-<div class="parties" id="parties"></div>
 <h3 class="subhead">Bảng 1 · Ngày &amp; nhiên liệu</h3><div class="tblwrap"><table class="ctab"><colgroup><col style="width:15%"><col style="width:22%"><col style="width:9%"><col style="width:12%"><col style="width:15%"><col style="width:20%"><col style="width:7%"></colgroup><thead><tr><th>Ngày</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th>Số xe</th><th></th></tr></thead>
 <tbody id="calcRows"></tbody>
 <tfoot><tr><td colspan="2">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td colspan="2" class="cnote" id="sumNote"></td></tr></tfoot></table></div>
@@ -357,9 +356,9 @@ function rowHTML(r,i){
    '<td data-l="Số lít"><input class="in c-lit" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="'+r.liters+'"></td>'+
    '<td data-l="Đơn giá (đ/lít)"><input class="in c-price" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value=""></td>'+
    '<td data-l="Thành tiền" class="c-total">—</td>'+
-   '<td data-l="Số xe" class="xecell"><select class="in c-xesel">'+opts+
+   '<td data-l="Số xe" class="xecell"><select class="in c-xesel'+(r.xeMode==='o'?' hidden':'')+'">'+opts+
      '<option value="o"'+(r.xeMode==='o'?' selected':'')+'>Khác…</option></select>'+
-     '<input class="in c-xe'+(r.xeMode==='o'?'':' hidden')+'" type="text" maxlength="20" placeholder="Nhập số xe khác" value="'+(r.xeMode==='o'?esc(r.xe||''):'')+'"></td>'+
+     '<div class="xeother'+(r.xeMode==='o'?'':' hidden')+'"><input class="in c-xe" type="text" maxlength="20" placeholder="Nhập số xe" value="'+(r.xeMode==='o'?esc(r.xe||''):'')+'"><button class="xeback" type="button" title="Chọn lại từ danh sách">▾</button></div></td>'+
    '<td class="td-x"><button class="x" title="Xóa dòng">✕</button></td></tr>'+
    '<tr class="nrow hidden" data-r="'+i+'"><td colspan="7" class="cnote"></td></tr>';
 }
@@ -444,6 +443,7 @@ function totals(){
   $('sumNote').textContent=miss?miss+' dòng chưa có đơn giá nên chưa được cộng.':'';
 }
 function renderParties(){
+  if(!$('parties'))return;   // khung Bên mua/Bên bán đã được gỡ khỏi giao diện
   const seen={};
   rows.forEach(r=>{const k=xeKey(r),info=XE_INFO[k];if(info){(seen[info.seller]=seen[info.seller]||[]);if(!seen[info.seller].includes(k))seen[info.seller].push(k);}});
   let h='<div class="party"><h4>BÊN MUA (B)</h4><b>'+esc(BUYER.name)+'</b><div class="m">MST: '+esc(BUYER.mst)+'</div><div class="m">'+esc(BUYER.addr)+'</div></div>';
@@ -489,7 +489,8 @@ function ownerRow(el){
     const v=e.target.value,inp=main.querySelector('.c-xe');
     if(v==='o'){r.xeMode='o';r.xe='';r.taixe='';}
     else{r.xeMode='k';r.xe=v;r.taixe=driverOf(v);}
-    inp.classList.toggle('hidden',v!=='o');inp.value='';
+    const box=main.querySelector('.xeother');
+    e.target.classList.toggle('hidden',v==='o');box.classList.toggle('hidden',v!=='o');inp.value='';
     driverRow(main).querySelector('.c-tx').value=r.taixe;
     r.price=null;
     if(v==='o')inp.focus();
@@ -501,6 +502,15 @@ function ownerRow(el){
   refreshRow(main,true);totals();saveRows();
 }));
 cb.addEventListener('click',e=>{
+  const bk=e.target.closest('button.xeback');
+  if(bk){
+    const main=ownerRow(bk),r=rows[+main.dataset.i];
+    r.xeMode='k';r.xe=XE_LIST[0];r.taixe=driverOf(r.xe);r.price=null;
+    const sl=main.querySelector('.c-xesel');sl.value=r.xe;sl.classList.remove('hidden');
+    main.querySelector('.xeother').classList.add('hidden');
+    driverRow(main).querySelector('.c-tx').value=r.taixe;
+    refreshRow(main,true);totals();renderParties();saveRows();sl.focus();return;
+  }
   const b=e.target.closest('button.x');if(!b)return;
   rows.splice(+b.closest('tr').dataset.i,1);
   if(!rows.length)rows.push(newRow());
