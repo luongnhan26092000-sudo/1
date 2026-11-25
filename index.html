@@ -58,7 +58,7 @@ section{scroll-margin-top:16px}
 .calc{display:flex;flex-wrap:wrap;gap:0;padding:0;overflow:hidden}
 .tl{flex:999 1 520px;padding:16px;min-width:0}.tt{flex:1 1 260px;background:var(--ps);border-left:1px solid var(--peach);padding:20px 16px;display:flex;flex-direction:column;gap:12px}
 .ch{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}.ch h2{margin:0;font-size:15px;line-height:22px}.ch p{margin:0;color:var(--ink3)}
-.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px}.calc th:nth-child(1){width:190px}.calc th:nth-child(2){width:190px}.calc th:nth-child(3),.calc th:nth-child(4){width:112px}.calc th:nth-child(5){width:120px}.calc th:nth-child(6){width:48px}.calc table{min-width:700px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px}.calc th:nth-child(1){width:330px}.calc th:nth-child(2){width:160px}.calc th:nth-child(3){width:84px}.calc th:nth-child(4){width:96px}.calc th:nth-child(5){width:104px}.calc th:nth-child(6){width:44px}.calc table{min-width:820px}.calc th,.calc td{padding-left:8px;padding-right:8px}.dc{display:flex;align-items:center;gap:8px}.dc .in{width:148px;flex:none}.dc .seg.sm{margin-top:0;flex:none}.dc .seg.sm button{padding:0 7px;font-size:12px}
 th{font-size:11px;line-height:16px;font-weight:700;text-transform:uppercase;color:var(--ink2);background:var(--sub);padding:8px 12px;text-align:left;letter-spacing:.3px}
 td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:top}th.r,td.r{text-align:right}
 td.amt{font-weight:800;padding-top:16px}.wn{font-size:11px;line-height:14px;color:var(--wn);margin-top:2px}
@@ -171,8 +171,8 @@ function quote(r){const adj=adjOf(r.date),p=r.date>DATA_THROUGH?null:periodAt(r.
 function save(){try{localStorage.setItem(KEY,JSON.stringify(rows));}catch(e){}}
 function load(){try{const a=JSON.parse(localStorage.getItem(KEY)||'null');if(Array.isArray(a))return a.filter(x=>x&&/^\d{4}-\d{2}-\d{2}$/.test(x.date)).map(x=>({date:x.date,key:x.key==='do001'?'do001':'do',slot:x.slot==='before'?'before':'after',liters:x.liters==null?'':String(x.liters),price:typeof x.price==='number'?x.price:null}));}catch(e){}return[];}
 function rowHTML(r,i){const q=quote(r);
-  return '<tr data-i="'+i+'"><td><input class="in c-date" type="date" aria-label="Ngày đổ" min="'+minD+'" max="'+lastData+'" value="'+r.date+'">'+
-   (q.adj?'<div class="seg sm" role="group" aria-label="Thời điểm đổ"><button data-s="before" class="'+(r.slot==='before'?'on':'')+'">Trước '+q.adj+'</button><button data-s="after" class="'+(r.slot!=='before'?'on':'')+'">Từ '+q.adj+'</button></div>':'')+'</td>'+
+  return '<tr data-i="'+i+'"><td><div class="dc"><input class="in c-date" type="date" aria-label="Ngày đổ" min="'+minD+'" max="'+lastData+'" value="'+r.date+'">'+
+   (q.adj?'<div class="seg sm" role="group" aria-label="Thời điểm đổ"><button data-s="before" class="'+(r.slot==='before'?'on':'')+'">Trước '+q.adj+'</button><button data-s="after" class="'+(r.slot!=='before'?'on':'')+'">Từ '+q.adj+'</button></div>':'')+'</div></td>'+
    '<td><select class="in c-key" aria-label="Loại dầu">'+KEYS.map(k=>'<option value="'+k+'"'+(r.key===k?' selected':'')+'>'+LABEL[k]+'</option>').join('')+'</select></td>'+
    '<td class="r"><input class="in r c-lit" type="text" inputmode="decimal" placeholder="0" aria-label="Số lít" value="'+r.liters+'"></td>'+
    '<td class="r"><input class="in r c-price" type="text" inputmode="numeric" aria-label="Đơn giá"><div class="wn"></div></td><td class="r amt">–</td>'+
