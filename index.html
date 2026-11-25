@@ -89,17 +89,29 @@ td.cnote{color:var(--muted);font-size:12px;white-space:normal;text-align:left}
 button.x{padding:5px 9px;border-radius:8px;background:transparent}
 .c-total{font-weight:800}
 tfoot td{font-weight:800;border-top:1px solid var(--line);background:#f4f6fa}
+
+.top{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 20px;box-shadow:0 4px 18px rgba(16,24,40,.06)}
+.kpihead{display:flex;align-items:center;gap:12px;margin:6px 0 10px}
+.seg{display:inline-flex;background:#eef1f6;border-radius:12px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 18px;border-radius:9px;font-weight:700;color:var(--muted);cursor:pointer}
+.seg button.on{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(16,24,40,.15)}
+#chart{margin:4px 0 14px}#chart svg{width:100%;height:auto;display:block}
+#chart .lg{display:flex;gap:16px;font-size:13px;font-weight:700;margin-bottom:4px}#chart .lg i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+details.section>summary{cursor:pointer;font-size:17px;font-weight:800;color:var(--navy);list-style:none}
+details.section>summary::before{content:"▸ ";color:var(--blue)}details.section[open]>summary::before{content:"▾ "}
+#totbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;gap:40px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(16,24,40,.08);backdrop-filter:blur(6px)}
+#totbar .tb{display:flex;align-items:baseline;gap:10px}#totbar .tb span{font-size:13px;color:var(--muted);font-weight:700}
+#totbar #tbL{font-size:18px;color:var(--blue)}#totbar #tbA{font-size:24px;color:var(--green)}
+body{padding-bottom:78px}
 </style></head>
 <body><div class="wrap">
-<div class="top"><div><div class="brand">FUEL INTELLIGENCE • VIETNAM</div><div class="title">Giá dầu diesel theo ngày</div><div class="sub">Giá bán lẻ Petrolimex • Đơn vị: đồng/lít • Xem lại từ đầu tháng trước đến hôm nay</div></div>
+<div class="top"><div><div class="brand">FUEL MANAGEMENT • VIETNAM</div><div class="title">Giá dầu Việt Nam</div><div class="sub">Giá bán lẻ Petrolimex • Đối chiếu chi phí nhiên liệu</div></div>
 <div class="actions"><button class="primary" id="refresh">↻ Tải lại dữ liệu</button><a class="btn btn-plx" href="https://www.petrolimex.com.vn/" target="_blank" rel="noopener">Petrolimex ↗</a></div></div>
 <div class="status"><span id="state"></span><span id="updated"></span></div>
 
 
 <div class="datebar" title="Giá tham khảo theo bảng công bố Petrolimex">
- <label for="region" class="muted" style="font-weight:700">Khu vực giá:</label>
- <select id="region"><option value="v1">Vùng 1</option><option value="v2">Vùng 2</option></select>
- <span class="vsep"></span>
+ <select id="region" style="display:none"><option value="v1">Vùng 1</option><option value="v2">Vùng 2</option></select>
  <label for="day" class="muted" style="font-weight:700">Chọn ngày:</label>
  <button id="prev" title="Ngày trước">‹</button>
  <input type="date" id="day">
@@ -110,6 +122,7 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#f4f6fa}
 
 <div id="warn" class="warn hidden"></div>
 
+<div class="kpihead"><span class="muted" style="font-weight:700">Khu vực giá</span><div class="seg" id="rgSeg"><button data-r="v1">Vùng 1</button><button data-r="v2">Vùng 2</button></div></div>
 <div class="grid" id="cards">
 <div class="card c1"><div class="label">Dầu Diesel 0,05S-II <span class="rg"></span></div><div class="price" id="do">—</div><div class="badge" id="b_do"></div></div>
 <div class="card c2"><div class="label">Dầu Diesel 0,001S-V <span class="rg"></span></div><div class="price" id="do001">—</div><div class="badge" id="b_do001"></div></div>
@@ -119,21 +132,23 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#f4f6fa}
 <h3 class="subhead">Ngày &amp; nhiên liệu</h3><div class="tblwrap"><table class="ctab"><colgroup><col style="width:17%"><col style="width:13%"><col style="width:28%"><col style="width:9%"><col style="width:13%"><col style="width:14%"><col style="width:6%"></colgroup><thead><tr><th>Ngày</th><th>Thời điểm</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th></th></tr></thead>
 <tbody id="calcRows"></tbody>
 <tfoot><tr><td colspan="3">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td></td></tr><tr><td colspan="7" class="cnote" id="sumNote" style="font-weight:400;border-top:0"></td></tr></tfoot></table></div>
-<div class="calcbar"><button id="addRow">+ Thêm dòng</button><button id="copyRes">Sao chép (dán vào Excel)</button><button id="clearRows">Xóa hết</button><span class="muted" id="calcMsg" style="font-size:13px"></span></div></div>
+<div class="calcbar"><button id="addRow">+ Thêm dòng</button><button id="copyRes">Sao chép (dán vào Excel)</button><button id="csvRes">Tải file Excel (CSV)</button><button id="clearRows">Xóa hết</button><span class="muted" id="calcMsg" style="font-size:13px"></span></div></div>
 
 <div class="section" id="intraBox"><h2>Diễn biến trong ngày</h2>
 <div class="tblwrap"><table><thead><tr><th>Khung giờ</th><th>Diesel 0,05S-II</th><th>Diesel 0,001S-V</th></tr></thead><tbody id="intra"></tbody></table></div></div>
 
 <div class="section"><h2>Lịch sử theo ngày (từ đầu tháng trước đến nay)</h2>
+<div id="chart"></div>
 <div class="muted" style="font-size:13px;margin-bottom:10px">Bấm vào một dòng để xem chi tiết ngày đó. Giá hiển thị là giá có hiệu lực cuối ngày; chấm <span class="dot" style="margin:0 2px"></span> là ngày có điều chỉnh giá; số màu vàng có ký hiệu <b style="color:#e7c27d">≈</b> là giá ước tính.</div>
 <div class="tblwrap scroll"><table><thead><tr><th>Ngày</th><th>Diesel 0,05S-II</th><th>Diesel 0,001S-V</th></tr></thead><tbody id="hist"></tbody></table></div></div>
 
-<div class="section"><h2>Nguồn dữ liệu & lưu ý</h2><div class="note">
+<details class="section" id="srcBox"><summary>Thông tin nguồn dữ liệu &amp; lưu ý</summary><div class="note" style="margin-top:12px">
 <p>Giá thay đổi theo từng kỳ điều hành (thường vào chiều thứ Năm hằng tuần), nên mỗi ngày hiển thị giá của kỳ đang có hiệu lực. Với ngày có điều chỉnh, xem mục “Diễn biến trong ngày” để biết giá trước và sau giờ đổi giá.</p>
 <p>Dữ liệu gồm các kỳ có thay đổi giá dầu từ 24/09 đến 19/11/2026, tổng hợp từ thông cáo Petrolimex, Bộ Công Thương và các báo. Số thường là giá đã đối chiếu; số vàng có ký hiệu ≈ là <b>ước tính</b> cho kỳ chưa tìm được bảng giá Petrolimex chính thức (chủ yếu Vùng 2 và Diesel 0,001S kỳ 03/11, một số mặt hàng kỳ 15/10), tính từ mức chênh Vùng 2 so với Vùng 1 (khoảng 2%) và chênh lệch giữa hai loại Diesel của các kỳ lân cận, có thể lệch khoảng ±10–20 đồng. Ô “—” là chưa có cả số ước tính (Diesel 0,001S kỳ 24/09).</p>
 <p>Từ 15/10 đến 29/10, Petrolimex bán thấp hơn giá trần liên Bộ khoảng 300 đồng/lít.</p>
 <p>Giá được cập nhật tự động: một tác vụ trên GitHub đọc bảng giá Petrolimex mỗi giờ và ghi vào <code>data.json</code>; khi giá đổi, kỳ mới được thêm vào lịch sử. Thời điểm có hiệu lực của kỳ mới được làm tròn xuống giờ phát hiện, nên có thể lệch tối đa khoảng 1 giờ so với giờ chính thức.</p></div>
-<div class="source"><a href="https://www.petrolimex.com.vn/ndi/thong-cao-bao-chi.html" target="_blank" rel="noopener">Thông cáo điều chỉnh giá – Petrolimex</a> · <a href="https://webgia.com/gia-xang-dau/petrolimex/" target="_blank" rel="noopener">Bảng giá Petrolimex theo vùng (nguồn đọc tự động)</a> · <a href="https://moit.gov.vn/" target="_blank" rel="noopener">Bộ Công Thương</a></div></div>
+<div class="source"><a href="https://www.petrolimex.com.vn/ndi/thong-cao-bao-chi.html" target="_blank" rel="noopener">Thông cáo điều chỉnh giá – Petrolimex</a> · <a href="https://webgia.com/gia-xang-dau/petrolimex/" target="_blank" rel="noopener">Bảng giá Petrolimex theo vùng (nguồn đọc tự động)</a> · <a href="https://moit.gov.vn/" target="_blank" rel="noopener">Bộ Công Thương</a></div></details>
+<div id="totbar"><div class="tb"><span>Tổng số lít</span><b id="tbL">0 lít</b></div><div class="tb"><span>Tổng tiền</span><b id="tbA">0 đ</b></div></div>
 <div class="footer">Lưu ý: Vùng 1 và Vùng 2 có giá khác nhau. Mức giá trên là giá bán lẻ Petrolimex, không phải giá cơ sở của Bộ Công Thương.</div>
 </div>
 <script>
@@ -254,6 +269,8 @@ function render(){
       KEYS.map(k=>cell(p,k)).join('')+'</tr>');
   }
   $('hist').innerHTML=out.join('');
+  drawChart();
+  document.querySelectorAll('#rgSeg button').forEach(b=>b.classList.toggle('on',b.dataset.r===region()));
   const ae=document.activeElement;
   if(!(ae&&$('calcRows').contains(ae)))renderCalc();
 }
@@ -389,6 +406,7 @@ function totals(){
   sumL=sl;sumA=sa;
   $('sumLit').textContent=sl.toLocaleString('vi-VN',{maximumFractionDigits:2})+' lít';
   $('sumAmt').textContent=vn(sa)+' đ';
+  $('tbL').textContent=$('sumLit').textContent;$('tbA').textContent=vn(sa)+' đ';
   $('sumNote').textContent=miss?miss+' dòng chưa có đơn giá nên chưa được cộng.':'';
 }
 function renderCalc(){
@@ -432,6 +450,41 @@ $('copyRes').addEventListener('click',()=>{
   (navigator.clipboard?navigator.clipboard.writeText(L.join('\n')):Promise.reject())
     .then(()=>calcMsg('Đã sao chép, dán vào Excel được.'))
     .catch(()=>calcMsg('Không sao chép được, hãy bôi đen bảng rồi Ctrl+C.'));
+});
+
+
+function drawChart(){
+  const W=720,H=230,L=54,R=14,T=12,B=26,rg=region();
+  const ds=[];for(let d=minD;d<=lastData;d=addDays(d,-(-1)))ds.push(d);
+  const ser=KEYS.map(k=>ds.map(d=>priceOf(periodAt(d),k,rg)));
+  const all=ser.flat().filter(v=>v!=null);
+  if(!all.length||ds.length<2){$('chart').innerHTML='';return;}
+  let lo=Math.min(...all),hi=Math.max(...all);const pad=Math.max(100,(hi-lo)*0.15);lo=Math.floor((lo-pad)/100)*100;hi=Math.ceil((hi+pad)/100)*100;
+  const X=i=>L+(W-L-R)*i/(ds.length-1),Y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
+  const col=['#0057A8','#0b8a5a'];
+  let g='';
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,y=Y(v);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="#e6eaf0"/><text x="'+(L-8)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#6b7280">'+Math.round(v).toLocaleString('vi-VN')+'</text>';}
+  [0,Math.floor((ds.length-1)/2),ds.length-1].forEach((i,n)=>{g+='<text x="'+X(i)+'" y="'+(H-6)+'" text-anchor="'+(n===0?'start':n===2?'end':'middle')+'" font-size="11" fill="#6b7280">'+fmtVN(ds[i]).slice(0,5)+'</text>';});
+  const si=ds.indexOf(sel);if(si>=0)g+='<line x1="'+X(si)+'" x2="'+X(si)+'" y1="'+T+'" y2="'+(H-B)+'" stroke="#9db8dc" stroke-dasharray="4 3"/>';
+  ser.forEach((a,n)=>{let p='',m=false;a.forEach((v,i)=>{if(v==null){m=false;return;}p+=(m?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);m=true;});g+='<path d="'+p+'" fill="none" stroke="'+col[n]+'" stroke-width="2.4" stroke-linejoin="round"/>';});
+  $('chart').innerHTML='<div class="lg"><span><i style="background:'+col[0]+'"></i>Diesel 0,05S-II</span><span><i style="background:'+col[1]+'"></i>Diesel 0,001S-V</span><span class="muted">'+rgName(rg)+' • đồng/lít</span></div><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Biểu đồ giá dầu theo ngày">'+g+'</svg>';
+}
+document.querySelectorAll('#rgSeg button').forEach(b=>b.addEventListener('click',()=>{$('region').value=b.dataset.r;render();}));
+$('csvRes').addEventListener('click',()=>{
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const L=[['Ngày','Thời điểm','Tên hàng','Số lít','Đơn giá','Thành tiền']];
+  cb.querySelectorAll('tr[data-i]').forEach(tr=>{const r=rows[+tr.dataset.i];L.push([fmtVN(r.date),tr._when||'',KEYNAME[r.key],tr._lit==null?'':tr._lit,tr._price==null?'':tr._price,tr._tot==null?'':tr._tot]);});
+  L.push(['Tổng','','',sumL,'',sumA]);
+  const blob=new Blob(['\ufeff'+L.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tinh-tien-dau-'+today+'.csv';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);calcMsg('Đã tải file CSV, mở bằng Excel được.');
+});
+cb.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||e.target.tagName==='BUTTON')return;
+  const f=[...cb.querySelectorAll('input,select')].filter(x=>!x.disabled);
+  const i=f.indexOf(e.target);if(i<0)return;e.preventDefault();
+  if(i<f.length-1){f[i+1].focus();if(f[i+1].select)try{f[i+1].select();}catch(_){}}
+  else{rows.push(newRow());saveRows();renderCalc();const n=[...cb.querySelectorAll('input,select')].filter(x=>!x.disabled);const t=n[n.length-6]||n[0];t.focus();}
 });
 
 function applyData(d){
