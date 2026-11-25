@@ -95,7 +95,7 @@ td.amt{font-weight:800;padding-top:16px}.wn{font-size:11px;line-height:14px;colo
 
 .sb{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px}.sb small{color:var(--ink3);font-size:12px;line-height:16px}
 .sbv{font-size:22px;line-height:30px;font-weight:800;color:var(--cocoa)}.sbv i{font-size:12px;font-style:normal;margin-left:3px}.sb .two{gap:6px}.sb .two .btn{padding:0 4px;font-size:12px;white-space:nowrap}
-#sbSum{background:var(--ps);border-color:var(--peach)}#sbC div{display:flex;justify-content:space-between;font-size:12px}#sbC .dn_t{color:var(--teal);font-weight:700}#sbC .up_{color:var(--dg);font-weight:700}
+#sbC div{display:flex;justify-content:space-between;font-size:12px}#sbC .dn_t{color:var(--teal);font-weight:700}#sbC .up_{color:var(--dg);font-weight:700}
 @media(max-width:767px){.sb{display:none}}
 </style>
 </head>
@@ -103,7 +103,6 @@ td.amt{font-weight:800;padding-top:16px}.wn{font-size:11px;line-height:14px;colo
 <aside class="side">
  <div class="logo"><span><svg class="i" viewBox="0 0 24 24"><path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2 2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg></span><b>Giá dầu vận chuyển</b></div>
  <nav aria-label="Điều hướng"><a href="#gia" class="on"><svg class="i" viewBox="0 0 24 24"><path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/></svg>Giá theo ngày</a><a href="#tinh"><svg class="i" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>Tính tiền dầu</a><a href="#su"><svg class="i" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>Lịch sử giá</a><hr><a href="https://www.petrolimex.com.vn/" target="_blank" rel="noopener">Bảng giá Petrolimex ↗</a></nav>
- <div class="sb" id="sbSum"><small>Phiếu đang nhập</small><div class="sbv"><span id="sbA">–</span><i>đ</i></div><small id="sbN">0 phiếu · 0 lít</small><div class="two"><button class="btn sm" id="sbAdd">+ Thêm dòng</button><button class="btn sm" id="sbCopy">Sao chép</button></div></div>
  <div class="sb" id="sbPer"><small>Kỳ điều chỉnh gần nhất</small><b id="sbL"></b><div id="sbC"></div><small id="sbNx"></small></div>
  <div class="set"><b>Vùng giá của bạn</b><div class="seg" id="rgSeg"><button data-r="v1">Vùng 1</button><button data-r="v2">Vùng 2</button></div>
   <p>Giá bán lẻ Petrolimex, không phải giá cơ sở của Bộ Công Thương. <span id="upd"></span></p><button class="btn sm" id="reload">Tải lại dữ liệu</button><p id="msg" role="status"></p></div>
@@ -204,8 +203,7 @@ function totals(){let A=0,L=0,n=0;const by={do:[0,0],do001:[0,0]};
   $('rows').querySelectorAll('tr').forEach(tr=>{if(tr._amt!=null){A+=tr._amt;L+=tr._lit;n++;const k=rows[+tr.dataset.i].key;by[k][0]+=tr._lit;by[k][1]+=tr._amt;}});
   $('tA').textContent=vn(A);$('tN').textContent=L.toLocaleString('vi-VN')+' lít trên '+n+' phiếu';
   $('split').innerHTML=KEYS.filter(k=>by[k][0]).map(k=>'<div><div><span>'+LABEL[k]+'</span><span>'+vn(by[k][1])+' đ</span></div><small>'+by[k][0].toLocaleString('vi-VN')+' lít</small></div>').join('');
-  $('copy').disabled=!n;$('csv').disabled=!n;$('clr').disabled=!rows.length;$('empty').hidden=rows.length>0;
-  $('sbA').textContent=vn(A);$('sbN').textContent=n+' phiếu · '+L.toLocaleString('vi-VN')+' lít';$('sbCopy').disabled=!n;}
+  $('copy').disabled=!n;$('csv').disabled=!n;$('clr').disabled=!rows.length;$('empty').hidden=rows.length>0;}
 function renderRows(){$('rows').innerHTML=rows.map(rowHTML).join('');$('rows').querySelectorAll('tr').forEach(tr=>calcRow(tr,true));totals();}
 const rowOf=e=>e.target.closest('tr[data-i]');
 $('rows').addEventListener('input',e=>{const tr=rowOf(e);if(!tr)return;const r=rows[+tr.dataset.i],c=e.target.classList;
@@ -218,7 +216,7 @@ $('rows').addEventListener('click',e=>{const tr=rowOf(e);if(!tr)return;const r=r
   if(e.target.closest('.dbtn')){openCal(tr);return;}
   if(e.target.closest('.del')){rows.splice(+tr.dataset.i,1);renderRows();save();}});
 const addRow=()=>{rows.push({date:sel,key:'do',slot:'after',liters:'',price:null});renderRows();save();const l=$('rows').querySelectorAll('.c-lit');if(l.length)l[l.length-1].focus();};
-$('add').onclick=addRow;$('add2').onclick=addRow;$('sbAdd').onclick=addRow;$('sbCopy').onclick=()=>$('copy').click();
+$('add').onclick=addRow;$('add2').onclick=addRow;
 $('clr').onclick=()=>{if(rows.length&&confirm('Xóa tất cả các dòng?')){rows=[];renderRows();save();}};
 function table(){const L=[];$('rows').querySelectorAll('tr').forEach(tr=>{if(tr._amt==null)return;const r=rows[+tr.dataset.i];L.push([fmtVN(r.date),INV[r.key],tr._lit,tr._price,tr._amt]);});return L;}
 $('copy').onclick=()=>{const t=[['Ngày','Loại dầu','Số lít','Đơn giá','Thành tiền']].concat(table()).map(a=>a.join('\t')).join('\n'),b=$('copy');
