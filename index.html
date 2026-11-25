@@ -62,8 +62,8 @@ td.cnote{color:var(--muted);font-size:12px;white-space:normal;text-align:left}
 .ctab{table-layout:fixed}.ctab th,.ctab td{padding:8px}
 .ctab th:nth-child(1),.ctab th:nth-child(2),.ctab th:nth-child(3){text-align:left}
 #sumNote:empty{display:none}
-.ctab td:nth-child(2),.ctab td:nth-child(3){text-align:left}
-.in.c-time{padding-right:4px}
+#calc tfoot tr:has(#sumNote:empty){display:none}
+.ctab tbody td:nth-child(2),.ctab tbody td:nth-child(3){text-align:left}
 #calc tbody tr[data-i]{border-top:1px solid #e6eaf0;border-bottom:0}
 #calc tbody tr:first-child{border-top:0}
 #calc tbody tr.nrow{border:0}
@@ -116,7 +116,7 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#f4f6fa}
 </div>
 
 <div class="section" id="calc"><h2>Tính tiền theo số lít</h2>
-<h3 class="subhead">Ngày &amp; nhiên liệu</h3><div class="tblwrap"><table class="ctab"><colgroup><col style="width:16%"><col style="width:11%"><col style="width:28%"><col style="width:10%"><col style="width:14%"><col style="width:14%"><col style="width:7%"></colgroup><thead><tr><th>Ngày</th><th>Giờ</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th></th></tr></thead>
+<h3 class="subhead">Ngày &amp; nhiên liệu</h3><div class="tblwrap"><table class="ctab"><colgroup><col style="width:17%"><col style="width:17%"><col style="width:24%"><col style="width:9%"><col style="width:13%"><col style="width:14%"><col style="width:6%"></colgroup><thead><tr><th>Ngày</th><th>Thời điểm</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th></th></tr></thead>
 <tbody id="calcRows"></tbody>
 <tfoot><tr><td colspan="3">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td></td></tr><tr><td colspan="7" class="cnote" id="sumNote" style="font-weight:400;border-top:0"></td></tr></tfoot></table></div>
 <div class="calcbar"><button id="addRow">+ Thêm dòng</button><button id="copyRes">Sao chép (dán vào Excel)</button><button id="clearRows">Xóa hết</button><span class="muted" id="calcMsg" style="font-size:13px"></span></div></div>
@@ -281,14 +281,14 @@ const dig=v=>v==null?'':String(v).replace(/\D/g,'').slice(0,12);
 const rgName=r=>r==='v1'?'Vùng 1':'Vùng 2';
 
 function blankRow(o){
-  return Object.assign({date:sel,time:'',key:'do',liters:'',price:null},o||{});
+  return Object.assign({date:sel,slot:'after',key:'do',liters:'',price:null},o||{});
 }
 function loadRows(){
   try{
     const r=JSON.parse(localStorage.getItem(CALC_KEY)||'null');
     if(Array.isArray(r)&&r.length)return r.map(x=>({
       date:/^\d{4}-\d{2}-\d{2}$/.test(x.date)?x.date:lastData,
-      time:/^([01]\d|2[0-3]):[0-5]\d$/.test(x.time)?x.time:'',
+      slot:x.slot==='before'||x.slot==='after'?x.slot:(x.time&&x.time<'15:00'?'before':'after'),
       key:x.key==='do001'?'do001':'do',
       liters:x.liters==null?'':String(x.liters).replace(/[^0-9.]/g,''),
       price:num(x.price)}));
@@ -314,7 +314,7 @@ function tablePrice(date,key,rg,time){
 function rowHTML(r,i){
   return '<tr data-i="'+i+'">'+
    '<td data-l="Ngày"><input class="in c-date" type="date" min="'+minD+'" max="'+maxD+'" value="'+r.date+'"></td>'+
-   '<td data-l="Giờ"><input class="in c-time" type="time" step="60" value="'+(r.time||'')+'"></td>'+
+   '<td data-l="Thời điểm"><select class="in c-slot"><option value="before"'+(r.slot==='before'?' selected':'')+'>Trước mốc đổi giá</option><option value="after"'+(r.slot!=='before'?' selected':'')+'>Từ mốc đổi giá trở đi</option></select></td>'+
    '<td data-l="Tên hàng"><select class="in c-key"><option value="do"'+(r.key==='do'?' selected':'')+'>'+KEYNAME.do+'</option><option value="do001"'+(r.key==='do001'?' selected':'')+'>'+KEYNAME.do001+'</option></select></td>'+
    '<td data-l="Số lít"><input class="in c-lit" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="'+r.liters+'"></td>'+
    '<td data-l="Đơn giá (đ/lít)"><input class="in c-price" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value=""></td>'+
@@ -340,7 +340,7 @@ function refreshRow(tr,setPrice){
   const r=rows[+tr.dataset.i];if(!r)return;
   const nr=tr.nextElementSibling;
   const rg=region();
-  const tp=tablePrice(r.date,r.key,rg,r.time);
+  const tp=tablePrice(r.date,r.key,rg,r.slot==='before'?'00:00':'');
   const price=r.price!=null?r.price:tp.v;
   const pin=tr.querySelector('.c-price');
   if(setPrice)pin.value=price==null?'':vn(Math.round(price));
@@ -351,7 +351,17 @@ function refreshRow(tr,setPrice){
   const tot=(lit!=null&&price!=null)?Math.round(lit*price):null;
   tr.querySelector('.c-total').textContent=tot==null?'—':vn(tot)+' đ';
   tr._lit=lit;tr._tot=tot;tr._price=price;
-  const m=t=>+t.slice(0,2)*60+ +t.slice(3,5);
+  // ô chọn thời điểm: chỉ có 2 lựa chọn quanh mốc đổi giá của ngày đó
+  const sl=tr.querySelector('.c-slot');
+  const o0=sl.options[0],o1=sl.options[1];
+  if(tp.change){
+    o0.textContent='Trước '+tp.change;o1.textContent='Từ '+tp.change+' trở đi';
+    sl.disabled=false;sl.value=r.slot==='before'?'before':'after';
+    tr._when=(r.slot==='before'?'Trước ':'Từ ')+tp.change;
+  }else{
+    o0.textContent='Cả ngày';o1.textContent='Cả ngày';
+    sl.disabled=true;sl.value='after';tr._when='';
+  }
   const n=[];
   if(price==null)n.push('Chưa có giá cho ngày này, hãy nhập tay.');
   if(r.price==null&&tp.est)n.push('≈ Giá ước tính.');
@@ -360,19 +370,14 @@ function refreshRow(tr,setPrice){
     n.push('Khác bảng giá '+rgName(rg)+' ('+vn(tp.v)+' đ): phiếu '+(d>0?'cao hơn ':'thấp hơn ')+vn(Math.abs(d))+' đ/lít'+
       (lit!=null?' ('+(d>0?'+':'−')+vn(Math.abs(Math.round(d*lit)))+' đ).':'.'));
   }
-  let near=false;
   if(tp.change){
     const was=tp.before!=null?' (trước đó '+vn(tp.before)+' đ)':'';
-    if(!r.time)n.push('Ngày này đổi giá lúc '+tp.change+was+'; chưa chọn giờ nên đang lấy giá sau điều chỉnh. Chọn giờ đổ để tính đúng.');
-    else{
-      n.push('Đổ lúc '+r.time+' → áp dụng giá '+(r.time<tp.change?'cũ':'mới')+' (giá đổi lúc '+tp.change+was+').');
-      if(Math.abs(m(r.time)-m(tp.change))<60){near=true;n.push('Giờ đổ sát mốc đổi giá (mốc có thể lệch ~1 giờ), nên đối chiếu phiếu.');}
-    }
+    n.push('Ngày này đổi giá lúc '+tp.change+was+'; đang tính theo giá '+(r.slot==='before'?'cũ (đổ trước '+tp.change+')':'mới (đổ từ '+tp.change+')')+'.');
   }
   const t=n.join(' ');
   nr.firstElementChild.textContent=t;
   nr.classList.toggle('hidden',!t);
-  nr.classList.toggle('warnrow',!!diff||near);
+  nr.classList.toggle('warnrow',!!diff);
 }
 function totals(){
   let sl=0,sa=0,miss=0;
@@ -403,7 +408,7 @@ cb.addEventListener('change',e=>{
   const main=e.target.closest('tr[data-i]');if(!main)return;
   const r=rows[+main.dataset.i],c=e.target.classList;
   if(c.contains('c-date')){if(!e.target.value)return;r.date=e.target.value;r.price=null;}
-  else if(c.contains('c-time')){r.time=e.target.value;r.price=null;}
+  else if(c.contains('c-slot')){r.slot=e.target.value;r.price=null;}
   else if(c.contains('c-key')){r.key=e.target.value;r.price=null;}
   else if(!c.contains('c-price'))return;
   refreshRow(main,true);totals();saveRows();
@@ -418,10 +423,10 @@ function calcMsg(t){$('calcMsg').textContent=t;setTimeout(()=>{$('calcMsg').text
 $('addRow').addEventListener('click',()=>{rows.push(newRow());saveRows();renderCalc();});
 $('clearRows').addEventListener('click',()=>{rows=[blankRow({date:sel})];saveRows();renderCalc();});
 $('copyRes').addEventListener('click',()=>{
-  const L=[['Ngày','Giờ','Tên hàng','Số lít','Đơn giá','Thành tiền'].join('\t')];
+  const L=[['Ngày','Thời điểm','Tên hàng','Số lít','Đơn giá','Thành tiền'].join('\t')];
   cb.querySelectorAll('tr[data-i]').forEach(tr=>{
     const r=rows[+tr.dataset.i];
-    L.push([fmtVN(r.date),r.time||'',KEYNAME[r.key],tr._lit==null?'':tr._lit,tr._price==null?'':tr._price,tr._tot==null?'':tr._tot].join('\t'));
+    L.push([fmtVN(r.date),tr._when||'',KEYNAME[r.key],tr._lit==null?'':tr._lit,tr._price==null?'':tr._price,tr._tot==null?'':tr._tot].join('\t'));
   });
   const T=Array(6).fill('');T[0]='Tổng';T[3]=sumL;T[5]=sumA;L.push(T.join('\t'));
   (navigator.clipboard?navigator.clipboard.writeText(L.join('\n')):Promise.reject())
