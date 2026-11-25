@@ -115,11 +115,25 @@ body{padding-bottom:78px}
 .ctab .td-x{white-space:nowrap;text-align:right}
 button.x2{padding:5px 9px;border-radius:8px;background:transparent;margin-right:4px}
 .ctab td.c-total{font-weight:800}
+
+.tabs{display:flex;gap:6px;margin:4px 0 14px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:transparent;padding:11px 20px;font-weight:800;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;border-radius:0;margin-bottom:-1px}
+.tabs button.on{color:var(--blue);border-bottom-color:var(--blue)}
+body[data-tab="calc"] .tabhist{display:none}
+body[data-tab="hist"] #calc,body[data-tab="hist"] #totbar{display:none}
+body[data-tab="hist"]{padding-bottom:20px}
+
+.datebar{margin-bottom:12px}
+.stline{font-size:13px;color:var(--muted)}
+.card{min-height:0;padding:14px 20px}
+.card .kicker{margin-top:8px}
+.card .price{font-size:clamp(30px,4vw,40px)}
+.card .cfoot{margin-top:6px}
+.grid{margin-bottom:6px}
 </style></head>
-<body><div class="wrap">
+<body data-tab="calc"><div class="wrap">
 <div class="top"><div><div class="brand">FUEL INTELLIGENCE • VIETNAM</div><div class="title">Giá dầu Việt Nam</div><div class="sub">Giá bán lẻ Petrolimex • Đối chiếu chi phí nhiên liệu</div></div>
 <div class="actions"><div class="pill"><i></i><span id="hdUpd">Đang kiểm tra dữ liệu…</span></div><div class="seg" id="rgSeg"><button data-r="v1">Vùng 1</button><button data-r="v2">Vùng 2</button></div><button class="primary" id="refresh">↻ Tải lại dữ liệu</button><a class="btn btn-plx" href="https://www.petrolimex.com.vn/" target="_blank" rel="noopener">Petrolimex ↗</a></div></div>
-<div class="status"><span id="state"></span><span id="updated" style="display:none"></span></div>
 
 
 <div class="datebar" title="Giá tham khảo theo bảng công bố Petrolimex">
@@ -129,31 +143,32 @@ button.x2{padding:5px 9px;border-radius:8px;background:transparent;margin-right:
  <input type="date" id="day">
  <button id="next" title="Ngày sau">›</button>
  <button id="today">Hôm nay</button>
- <span class="sp"></span>
+ <span class="sp"></span><span id="state" class="stline"></span><span id="updated" style="display:none"></span>
 </div>
 
 <div id="warn" class="warn hidden"></div>
 
 <div class="grid" id="cards">
-<div class="card c1"><div class="label">DIESEL 0,05S-II <span class="rg"></span></div><div class="kicker">GIÁ HIỆN TẠI</div><div class="price" id="do">—</div><div class="cfoot"><div class="badge" id="b_do"></div><span class="psrc">Petrolimex</span></div></div>
-<div class="card c2"><div class="label">DIESEL 0,001S-V <span class="rg"></span></div><div class="kicker">GIÁ HIỆN TẠI</div><div class="price" id="do001">—</div><div class="cfoot"><div class="badge" id="b_do001"></div><span class="psrc">Petrolimex</span></div></div>
+<div class="card c1"><div class="label">Diesel 0,05S-II <span class="rg"></span></div><div class="kicker">GIÁ HIỆN TẠI</div><div class="price" id="do">—</div><div class="cfoot"><div class="badge" id="b_do"></div><span class="psrc">Petrolimex</span></div></div>
+<div class="card c2"><div class="label">Diesel 0,001S-V <span class="rg"></span></div><div class="kicker">GIÁ HIỆN TẠI</div><div class="price" id="do001">—</div><div class="cfoot"><div class="badge" id="b_do001"></div><span class="psrc">Petrolimex</span></div></div>
 </div>
 
+<div class="tabs" id="tabs"><button data-t="calc" class="on">Tính tiền</button><button data-t="hist">Biến động &amp; lịch sử</button></div>
 <div class="section" id="calc"><h2>Tính tiền theo số lít</h2>
 <h3 class="subhead">Ngày &amp; nhiên liệu</h3><div class="tblwrap"><table class="ctab"><colgroup><col style="width:17%"><col style="width:13%"><col style="width:26%"><col style="width:9%"><col style="width:13%"><col style="width:14%"><col style="width:8%"></colgroup><thead><tr><th>Ngày</th><th>Thời điểm</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th></th></tr></thead>
 <tbody id="calcRows"></tbody>
 <tfoot><tr><td colspan="3">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td></td></tr><tr><td colspan="7" class="cnote" id="sumNote" style="font-weight:400;border-top:0"></td></tr></tfoot></table></div>
 <div class="calcbar"><button id="addRow">+ Thêm dòng</button><button id="copyRes">Sao chép (dán vào Excel)</button><button id="csvRes">Tải file Excel (CSV)</button><button id="clearRows">Xóa hết</button><span class="muted" id="calcMsg" style="font-size:13px"></span></div></div>
 
-<div class="section" id="intraBox"><h2>Diễn biến trong ngày</h2>
+<div class="section tabhist" id="intraBox"><h2>Diễn biến trong ngày</h2>
 <div class="tblwrap"><table><thead><tr><th>Khung giờ</th><th>Diesel 0,05S-II</th><th>Diesel 0,001S-V</th></tr></thead><tbody id="intra"></tbody></table></div></div>
 
-<div class="section"><h2>Lịch sử theo ngày (từ đầu tháng trước đến nay)</h2>
+<div class="section tabhist"><h2>Lịch sử theo ngày (từ đầu tháng trước đến nay)</h2>
 <div id="chart"></div>
 <div class="muted" style="font-size:13px;margin-bottom:10px">Bấm vào một dòng để xem chi tiết ngày đó. Giá hiển thị là giá có hiệu lực cuối ngày; chấm <span class="dot" style="margin:0 2px"></span> là ngày có điều chỉnh giá; số màu vàng có ký hiệu <b style="color:#e7c27d">≈</b> là giá ước tính.</div>
 <div class="tblwrap scroll"><table><thead><tr><th>Ngày</th><th>Diesel 0,05S-II</th><th>Diesel 0,001S-V</th></tr></thead><tbody id="hist"></tbody></table></div></div>
 
-<details class="section" id="srcBox"><summary>Thông tin nguồn dữ liệu &amp; lưu ý</summary><div class="note" style="margin-top:12px">
+<details class="section tabhist" id="srcBox"><summary>Thông tin nguồn dữ liệu &amp; lưu ý</summary><div class="note" style="margin-top:12px">
 <p>Giá thay đổi theo từng kỳ điều hành (thường vào chiều thứ Năm hằng tuần), nên mỗi ngày hiển thị giá của kỳ đang có hiệu lực. Với ngày có điều chỉnh, xem mục “Diễn biến trong ngày” để biết giá trước và sau giờ đổi giá.</p>
 <p>Dữ liệu gồm các kỳ có thay đổi giá dầu từ <span id="nFirst"></span> đến <span id="nLast"></span> (kỳ điều chỉnh gần nhất; sau mốc này giá giữ nguyên đến khi có kỳ mới, dữ liệu đã được kiểm tra đến <span id="nChk"></span>), tổng hợp từ thông cáo Petrolimex, Bộ Công Thương và các báo. Số thường là giá đã đối chiếu; số vàng có ký hiệu ≈ là <b>ước tính</b> cho kỳ chưa tìm được bảng giá Petrolimex chính thức (chủ yếu Vùng 2 và Diesel 0,001S kỳ 03/11, một số mặt hàng kỳ 15/10), tính từ mức chênh Vùng 2 so với Vùng 1 (khoảng 2%) và chênh lệch giữa hai loại Diesel của các kỳ lân cận, có thể lệch khoảng ±10–20 đồng. Ô “—” là chưa có cả số ước tính (Diesel 0,001S kỳ 24/09).</p>
 <p>Từ 15/10 đến 29/10, Petrolimex bán thấp hơn giá trần liên Bộ khoảng 300 đồng/lít.</p>
@@ -301,6 +316,7 @@ $('today').addEventListener('click',()=>setDay(lastData));
 $('hist').addEventListener('click',e=>{const tr=e.target.closest('tr[data-d]');if(tr)setDay(tr.dataset.d);});
 /* ===== Tính tiền theo số lít ===== */
 const CALC_KEY='diesel_calc_rows_v1';
+const LABEL={do:'Diesel 0,05S-II',do001:'Diesel 0,001S-V'};
 const KEYNAME={do:'Dầu Điêzen 0,05S Mức 2',do001:'Dầu Điêzen 0,001S Mức 5'};   // tên hàng ghi như trên phiếu
 const num=v=>{const n=parseFloat(v);return isFinite(n)?n:null;};
 const vn=n=>n.toLocaleString('vi-VN');
@@ -344,7 +360,7 @@ function rowHTML(r,i){
   return '<tr data-i="'+i+'">'+
    '<td data-l="Ngày"><input class="in c-date" type="date" min="'+minD+'" max="'+maxD+'" value="'+r.date+'"></td>'+
    '<td data-l="Thời điểm"><select class="in c-slot"><option value="before"'+(r.slot==='before'?' selected':'')+'>Trước</option><option value="after"'+(r.slot!=='before'?' selected':'')+'>Sau</option></select></td>'+
-   '<td data-l="Tên hàng"><select class="in c-key"><option value="do"'+(r.key==='do'?' selected':'')+'>'+KEYNAME.do+'</option><option value="do001"'+(r.key==='do001'?' selected':'')+'>'+KEYNAME.do001+'</option></select></td>'+
+   '<td data-l="Tên hàng"><select class="in c-key"><option value="do"'+(r.key==='do'?' selected':'')+'>'+LABEL.do+'</option><option value="do001"'+(r.key==='do001'?' selected':'')+'>'+LABEL.do001+'</option></select></td>'+
    '<td data-l="Số lít"><input class="in c-lit" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="'+r.liters+'"></td>'+
    '<td data-l="Đơn giá (đ/lít)"><input class="in c-price" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value=""></td>'+
    '<td data-l="Thành tiền" class="c-total">—</td>'+
@@ -507,6 +523,10 @@ function setUpd(){
   $('hdUpd').textContent='Dữ liệu đến '+fmtVN(DATA_THROUGH);
   if($('nFirst')){$('nFirst').textContent=fmtVN(PERIODS[0].from.slice(0,10));$('nLast').textContent=fmtVN(PERIODS[PERIODS.length-1].from.slice(0,10));$('nChk').textContent=fmtVN(DATA_THROUGH);}
 }
+document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.body.dataset.tab=b.dataset.t;
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+}));
 function applyData(d){
   if(!d||!Array.isArray(d.periods)||!d.periods.length||!d.dataThrough)throw new Error('data.json không hợp lệ');
   PERIODS=d.periods;DATA_THROUGH=d.dataThrough;
