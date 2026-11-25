@@ -39,6 +39,7 @@ b.hl{color:#111827;font-size:16px}b.hl2{color:#0057A8}b.hl3{color:#7a5200}
 .card{border-left-width:5px}
 .card.c1{border-left-color:var(--blue)}.card.c2{border-left-color:var(--green)}
 .card .price{font-size:clamp(34px,5vw,46px)}
+.card .price::after{content:" đồng/lít";font-size:14px;font-weight:700;letter-spacing:0;color:var(--muted);margin-left:4px}
 .card.c1 .price:not(.est){color:#0057A8}.card.c2 .price:not(.est){color:#0b8a5a}
 .rg{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:20px;background:#e3eefb;color:#0057A8;font-size:11px;font-weight:800;vertical-align:middle}
 #calc{background:linear-gradient(145deg,#ffffff,#f5f8fc);border:1px solid #9db8dc;border-radius:18px;padding:20px;box-shadow:0 0 0 3px rgba(0,87,168,.07),0 10px 28px rgba(16,24,40,.08)}
@@ -105,14 +106,13 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#f4f6fa}
  <button id="next" title="Ngày sau">›</button>
  <button id="today">Hôm nay</button>
  <span class="sp"></span>
- <span class="muted" id="range" style="font-size:13px"></span>
 </div>
 
 <div id="warn" class="warn hidden"></div>
 
 <div class="grid" id="cards">
-<div class="card c1"><div class="label">Dầu Diesel 0,05S-II <span class="rg"></span></div><div class="price" id="do">—</div><div class="unit">đồng/lít</div><div class="badge" id="b_do"></div></div>
-<div class="card c2"><div class="label">Dầu Diesel 0,001S-V <span class="rg"></span></div><div class="price" id="do001">—</div><div class="unit">đồng/lít</div><div class="badge" id="b_do001"></div></div>
+<div class="card c1"><div class="label">Dầu Diesel 0,05S-II <span class="rg"></span></div><div class="price" id="do">—</div><div class="badge" id="b_do"></div></div>
+<div class="card c2"><div class="label">Dầu Diesel 0,001S-V <span class="rg"></span></div><div class="price" id="do001">—</div><div class="badge" id="b_do001"></div></div>
 </div>
 
 <div class="section" id="calc"><h2>Tính tiền theo số lít</h2>
@@ -160,6 +160,7 @@ const parse=s=>{const a=s.split('-').map(Number);return new Date(a[0],a[1]-1,a[2
 const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return fmtISO(d);};
 const fmtVN=s=>{const a=s.split('-');return a[2]+'/'+a[1]+'/'+a[0];};
 const money=v=>v==null?'—':v.toLocaleString('vi-VN')+' đ';
+const plain=v=>v==null?'—':v.toLocaleString('vi-VN');
 const $=id=>document.getElementById(id);
 
 const today=fmtISO(new Date());
@@ -204,7 +205,6 @@ function render(){
   const day=$('day');
   day.min=minD;day.max=maxD;day.value=sel;
   $('prev').disabled=sel<=minD;$('next').disabled=sel>=maxD;
-  $('range').textContent='Xem được từ '+fmtVN(minD)+' đến '+fmtVN(maxD);
 
   document.querySelectorAll('.rg').forEach(e=>{e.textContent=region()==='v1'?'Vùng 1':'Vùng 2';});
   const noData=sel>DATA_THROUGH;
@@ -218,7 +218,7 @@ function render(){
   const prev=noData?null:periodAt(addDays(sel,-1));
   for(const k of KEYS){
     const est=isEst(cur,k);
-    $(k).textContent=(est?'≈ ':'')+money(priceOf(cur,k));
+    $(k).textContent=(est?'≈ ':'')+plain(priceOf(cur,k));
     $(k).className='price'+(est?' est':'');
     $(k).title=est?EST_TIP:'';
     badge($('b_'+k),priceOf(cur,k),priceOf(prev,k),est||isEst(prev,k));
