@@ -116,7 +116,7 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);background:#f4f6fa}
 </div>
 
 <div class="section" id="calc"><h2>Tính tiền theo số lít</h2>
-<h3 class="subhead">Ngày &amp; nhiên liệu</h3><div class="tblwrap"><table class="ctab"><colgroup><col style="width:17%"><col style="width:17%"><col style="width:24%"><col style="width:9%"><col style="width:13%"><col style="width:14%"><col style="width:6%"></colgroup><thead><tr><th>Ngày</th><th>Thời điểm</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th></th></tr></thead>
+<h3 class="subhead">Ngày &amp; nhiên liệu</h3><div class="tblwrap"><table class="ctab"><colgroup><col style="width:17%"><col style="width:13%"><col style="width:28%"><col style="width:9%"><col style="width:13%"><col style="width:14%"><col style="width:6%"></colgroup><thead><tr><th>Ngày</th><th>Thời điểm</th><th>Tên hàng</th><th>Số lít</th><th>Đơn giá (đ/lít)</th><th>Thành tiền</th><th></th></tr></thead>
 <tbody id="calcRows"></tbody>
 <tfoot><tr><td colspan="3">Tổng cộng</td><td id="sumLit">0 lít</td><td></td><td id="sumAmt">0 đ</td><td></td></tr><tr><td colspan="7" class="cnote" id="sumNote" style="font-weight:400;border-top:0"></td></tr></tfoot></table></div>
 <div class="calcbar"><button id="addRow">+ Thêm dòng</button><button id="copyRes">Sao chép (dán vào Excel)</button><button id="clearRows">Xóa hết</button><span class="muted" id="calcMsg" style="font-size:13px"></span></div></div>
@@ -314,7 +314,7 @@ function tablePrice(date,key,rg,time){
 function rowHTML(r,i){
   return '<tr data-i="'+i+'">'+
    '<td data-l="Ngày"><input class="in c-date" type="date" min="'+minD+'" max="'+maxD+'" value="'+r.date+'"></td>'+
-   '<td data-l="Thời điểm"><select class="in c-slot"><option value="before"'+(r.slot==='before'?' selected':'')+'>Trước mốc đổi giá</option><option value="after"'+(r.slot!=='before'?' selected':'')+'>Từ mốc đổi giá trở đi</option></select></td>'+
+   '<td data-l="Thời điểm"><select class="in c-slot"><option value="before"'+(r.slot==='before'?' selected':'')+'>Trước</option><option value="after"'+(r.slot!=='before'?' selected':'')+'>Sau</option></select></td>'+
    '<td data-l="Tên hàng"><select class="in c-key"><option value="do"'+(r.key==='do'?' selected':'')+'>'+KEYNAME.do+'</option><option value="do001"'+(r.key==='do001'?' selected':'')+'>'+KEYNAME.do001+'</option></select></td>'+
    '<td data-l="Số lít"><input class="in c-lit" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="'+r.liters+'"></td>'+
    '<td data-l="Đơn giá (đ/lít)"><input class="in c-price" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value=""></td>'+
@@ -355,9 +355,9 @@ function refreshRow(tr,setPrice){
   const sl=tr.querySelector('.c-slot');
   const o0=sl.options[0],o1=sl.options[1];
   if(tp.change){
-    o0.textContent='Trước '+tp.change;o1.textContent='Từ '+tp.change+' trở đi';
+    o0.textContent='Trước '+tp.change;o1.textContent='Sau '+tp.change;
     sl.disabled=false;sl.value=r.slot==='before'?'before':'after';
-    tr._when=(r.slot==='before'?'Trước ':'Từ ')+tp.change;
+    tr._when=(r.slot==='before'?'Trước ':'Sau ')+tp.change;
   }else{
     o0.textContent='Cả ngày';o1.textContent='Cả ngày';
     sl.disabled=true;sl.value='after';tr._when='';
@@ -372,7 +372,7 @@ function refreshRow(tr,setPrice){
   }
   if(tp.change){
     const was=tp.before!=null?' (trước đó '+vn(tp.before)+' đ)':'';
-    n.push('Ngày này đổi giá lúc '+tp.change+was+'; đang tính theo giá '+(r.slot==='before'?'cũ (đổ trước '+tp.change+')':'mới (đổ từ '+tp.change+')')+'.');
+    n.push('Ngày này đổi giá lúc '+tp.change+was+'; đang tính theo giá '+(r.slot==='before'?'cũ (đổ trước '+tp.change+')':'mới (đổ sau '+tp.change+')')+'.');
   }
   const t=n.join(' ');
   nr.firstElementChild.textContent=t;
