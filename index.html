@@ -58,7 +58,7 @@ section{scroll-margin-top:16px}
 .calc{display:flex;flex-wrap:wrap;gap:0;padding:0;overflow:hidden}
 .tl{flex:999 1 520px;padding:16px;min-width:0}.tt{flex:1 1 260px;background:var(--ps);border-left:1px solid var(--peach);padding:20px 16px;display:flex;flex-direction:column;gap:12px}
 .ch{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}.ch h2{margin:0;font-size:15px;line-height:22px}.ch p{margin:0;color:var(--ink3)}
-.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px}.calc th:nth-child(1){width:330px}.calc th:nth-child(2){width:160px}.calc th:nth-child(3){width:84px}.calc th:nth-child(4){width:96px}.calc th:nth-child(5){width:104px}.calc th:nth-child(6){width:44px}.calc table{min-width:820px}.calc th,.calc td{padding-left:8px;padding-right:8px}.dc{display:flex;align-items:center;gap:8px}.dc .in{width:148px;flex:none}.dc .seg.sm{margin-top:0;flex:none}.dc .seg.sm button{padding:0 7px;font-size:12px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px}.calc th:nth-child(1){width:230px}.calc th:nth-child(2){width:160px}.calc th:nth-child(3){width:84px}.calc th:nth-child(4){width:96px}.calc th:nth-child(5){width:104px}.calc th:nth-child(6){width:44px}.calc table{min-width:720px}.calc th,.calc td{padding-left:8px;padding-right:8px}.dc{display:flex;align-items:center;gap:8px}.dc .in{width:148px;flex:none}.dc .seg.sm{margin-top:0;flex:none}.dc .seg.sm button{padding:0 7px;font-size:12px}
 th{font-size:11px;line-height:16px;font-weight:700;text-transform:uppercase;color:var(--ink2);background:var(--sub);padding:8px 12px;text-align:left;letter-spacing:.3px}
 td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:top}th.r,td.r{text-align:right}
 td.amt{font-weight:800;padding-top:16px}.wn{font-size:11px;line-height:14px;color:var(--wn);margin-top:2px}
@@ -81,6 +81,17 @@ td.amt{font-weight:800;padding-top:16px}.wn{font-size:11px;line-height:14px;colo
  .pc{margin-left:0;align-items:flex-start;text-align:left;flex-basis:100%}.pv{min-width:0;flex:1 1 100%}.pv em{white-space:nowrap}.pl{margin:0 6px 4px 0}.pn{width:100%}.tt{border-left:0;border-top:1px solid var(--peach)}
  .btn,.in,.dn button,.dn input{min-height:44px}.btn.main{height:52px}
 }
+
+.dbtn{display:flex;align-items:center;justify-content:space-between;gap:6px;text-align:left;cursor:pointer;white-space:nowrap}.dbtn em{font-style:normal;font-size:11px;font-weight:700;background:var(--e50);color:var(--e7);border-radius:6px;padding:1px 6px;margin-left:4px}
+#cal{position:absolute;z-index:60;width:288px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(102,39,19,.18);padding:12px}
+#cal .ch2{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}#cal .ch2 b{font-size:14px}
+#cal .nv{width:32px;height:32px;border:1px solid var(--bc);border-radius:8px;background:#fff;display:grid;place-items:center}#cal .nv:disabled{opacity:.35;cursor:default}
+#cal .gd{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}#cal .wd{font-size:11px;font-weight:700;color:var(--ink3);padding:4px 0}
+#cal .dy{position:relative;height:34px;border:0;border-radius:8px;background:transparent;font-weight:600}#cal .dy:hover:not(:disabled){background:var(--e50)}#cal .dy:disabled{color:#C9BDB4;cursor:default}
+#cal .dy.sel,#cal .dy.sel:hover:not(:disabled){background:var(--cocoa);color:#fff}#cal .dy.td{box-shadow:inset 0 0 0 1px var(--e5)}#cal .dy.ad::after{content:"";position:absolute;bottom:3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--e5)}
+#cal .dy.sel.ad::after{background:var(--amber)}
+#cal .ft{border-top:1px solid var(--line);margin-top:10px;padding-top:10px;font-size:12px;color:var(--ink3)}#cal .ft b{display:block;color:var(--ink);margin-bottom:6px}#cal .seg{margin-top:4px}#cal .seg button{height:30px;flex:1}
+#cal .lg{display:flex;align-items:center;gap:6px}#cal .lg i{width:6px;height:6px;border-radius:50%;background:var(--e5)}
 </style>
 </head>
 <body>
@@ -112,6 +123,7 @@ td.amt{font-weight:800;padding-top:16px}.wn{font-size:11px;line-height:14px;colo
   <p class="nt">Bấm vào một ngày để xem lại bảng giá ngày đó. Số có dấu ≈ và nét đứt trên biểu đồ là giá ước tính.</p>
  </section>
 </main>
+<div id="cal" role="dialog" aria-label="Chọn ngày đổ" hidden></div>
 <script>
 let DATA_THROUGH='2026-11-22';   // dự phòng khi không tải được data.json
 let PERIODS=[   // dự phòng; dữ liệu chính nằm trong data.json
@@ -171,8 +183,7 @@ function quote(r){const adj=adjOf(r.date),p=r.date>DATA_THROUGH?null:periodAt(r.
 function save(){try{localStorage.setItem(KEY,JSON.stringify(rows));}catch(e){}}
 function load(){try{const a=JSON.parse(localStorage.getItem(KEY)||'null');if(Array.isArray(a))return a.filter(x=>x&&/^\d{4}-\d{2}-\d{2}$/.test(x.date)).map(x=>({date:x.date,key:x.key==='do001'?'do001':'do',slot:x.slot==='before'?'before':'after',liters:x.liters==null?'':String(x.liters),price:typeof x.price==='number'?x.price:null}));}catch(e){}return[];}
 function rowHTML(r,i){const q=quote(r);
-  return '<tr data-i="'+i+'"><td><div class="dc"><input class="in c-date" type="date" aria-label="Ngày đổ" min="'+minD+'" max="'+lastData+'" value="'+r.date+'">'+
-   (q.adj?'<div class="seg sm" role="group" aria-label="Thời điểm đổ"><button data-s="before" class="'+(r.slot==='before'?'on':'')+'">Trước '+q.adj+'</button><button data-s="after" class="'+(r.slot!=='before'?'on':'')+'">Từ '+q.adj+'</button></div>':'')+'</div></td>'+
+  return '<tr data-i="'+i+'"><td><button type="button" class="in dbtn" aria-haspopup="dialog" aria-label="Ngày đổ: '+fmtVN(r.date)+'"><span>'+fmtVN(r.date)+(q.adj?' <em>'+(r.slot==='before'?'Trước ':'Từ ')+q.adj+'</em>':'')+'</span><svg class="i" viewBox="0 0 24 24"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></button></td>'+
    '<td><select class="in c-key" aria-label="Loại dầu">'+KEYS.map(k=>'<option value="'+k+'"'+(r.key===k?' selected':'')+'>'+LABEL[k]+'</option>').join('')+'</select></td>'+
    '<td class="r"><input class="in r c-lit" type="text" inputmode="decimal" placeholder="0" aria-label="Số lít" value="'+r.liters+'"></td>'+
    '<td class="r"><input class="in r c-price" type="text" inputmode="numeric" aria-label="Đơn giá"><div class="wn"></div></td><td class="r amt">–</td>'+
@@ -195,8 +206,8 @@ $('rows').addEventListener('input',e=>{const tr=rowOf(e);if(!tr)return;const r=r
 $('rows').addEventListener('change',e=>{const tr=rowOf(e);if(!tr)return;const r=rows[+tr.dataset.i],c=e.target.classList;
   if(c.contains('c-date')){if(!e.target.value)return;r.date=e.target.value;r.price=null;renderRows();}else if(c.contains('c-key')){r.key=e.target.value;r.price=null;renderRows();}
   else if(c.contains('c-price')){calcRow(tr,true);}else return;save();});
-$('rows').addEventListener('click',e=>{const tr=rowOf(e);if(!tr)return;const r=rows[+tr.dataset.i],s=e.target.closest('[data-s]');
-  if(s){r.slot=s.dataset.s;r.price=null;renderRows();save();return;}
+$('rows').addEventListener('click',e=>{const tr=rowOf(e);if(!tr)return;const r=rows[+tr.dataset.i];
+  if(e.target.closest('.dbtn')){openCal(tr);return;}
   if(e.target.closest('.del')){rows.splice(+tr.dataset.i,1);renderRows();save();}});
 const addRow=()=>{rows.push({date:sel,key:'do',slot:'after',liters:'',price:null});renderRows();save();const l=$('rows').querySelectorAll('.c-lit');if(l.length)l[l.length-1].focus();};
 $('add').onclick=addRow;$('add2').onclick=addRow;
@@ -208,6 +219,27 @@ $('copy').onclick=()=>{const t=[['Ngày','Loại dầu','Số lít','Đơn giá'
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(ok).catch(fail);};
 $('csv').onclick=()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"',L=[['Ngày','Loại dầu','Số lít','Đơn giá','Thành tiền']].concat(table());
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+L.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));a.download='tinh-tien-dau-'+today+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+
+/* ---- lịch chọn ngày đổ: ngày điều chỉnh có chấm cam, chọn Trước/Từ ngay trong lịch ---- */
+let cs=null;const cal=$('cal'),MN=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+function openCal(tr){const i=+tr.dataset.i,d=parse(rows[i].date);cs={i,y:d.getFullYear(),m:d.getMonth()};drawCal();cal.hidden=false;placeCal();}
+function placeCal(){const b=$('rows').querySelector('tr[data-i="'+cs.i+'"] .dbtn');if(!b)return closeCal();const r=b.getBoundingClientRect();cal.style.left=Math.max(8,Math.min(r.left+scrollX,innerWidth+scrollX-300))+'px';cal.style.top=(r.bottom+scrollY+4)+'px';}
+function closeCal(){cal.hidden=true;cs=null;}
+function drawCal(){const r=rows[cs.i],f=new Date(cs.y,cs.m,1),off=(f.getDay()+6)%7,n=new Date(cs.y,cs.m+1,0).getDate(),mk=cs.y*12+cs.m;
+  const lo=parse(minD),hi=parse(lastData),loM=lo.getFullYear()*12+lo.getMonth(),hiM=hi.getFullYear()*12+hi.getMonth();
+  let g=['T2','T3','T4','T5','T6','T7','CN'].map(x=>'<div class="wd">'+x+'</div>').join('')+'<div></div>'.repeat(off);
+  for(let d=1;d<=n;d++){const iso=fmtISO(new Date(cs.y,cs.m,d)),dis=iso<minD||iso>lastData,ad=!dis&&adjOf(iso);
+    g+='<button type="button" class="dy'+(iso===r.date?' sel':'')+(iso===today?' td':'')+(ad?' ad':'')+'" data-d="'+iso+'"'+(dis?' disabled':'')+(ad?' title="Ngày điều chỉnh giá lúc '+ad+'"':'')+'>'+d+'</button>';}
+  const a=adjOf(r.date);
+  cal.innerHTML='<div class="ch2"><button type="button" class="nv" data-mv="-1" aria-label="Tháng trước"'+(mk<=loM?' disabled':'')+'><svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><b>'+MN[cs.m]+' '+cs.y+'</b><button type="button" class="nv" data-mv="1" aria-label="Tháng sau"'+(mk>=hiM?' disabled':'')+'><svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button></div><div class="gd">'+g+'</div>'+
+   '<div class="ft">'+(a?'<b>Ngày '+dm(r.date)+' có điều chỉnh giá lúc '+a+'</b>Chọn thời điểm đổ dầu:<div class="seg" role="group"><button type="button" data-s="before" class="'+(r.slot==='before'?'on':'')+'">Trước '+a+'</button><button type="button" data-s="after" class="'+(r.slot!=='before'?'on':'')+'">Từ '+a+'</button></div>':'<div class="lg"><i></i>Ngày điều chỉnh giá (có chọn Trước/Từ giờ đổi giá)</div>')+'</div>';}
+cal.addEventListener('click',e=>{if(!cs)return;const r=rows[cs.i];
+  const mv=e.target.closest('[data-mv]');if(mv){const t=new Date(cs.y,cs.m+ +mv.dataset.mv,1);cs.y=t.getFullYear();cs.m=t.getMonth();drawCal();return;}
+  const dy=e.target.closest('.dy');if(dy&&!dy.disabled){const i=cs.i;r.date=dy.dataset.d;r.price=null;r.slot='after';renderRows();save();if(adjOf(r.date)){drawCal();placeCal();}else{closeCal();$('rows').querySelector('tr[data-i="'+i+'"] .dbtn').focus();}return;}
+  const sl=e.target.closest('[data-s]');if(sl){const i=cs.i;r.slot=sl.dataset.s;r.price=null;renderRows();save();closeCal();$('rows').querySelector('tr[data-i="'+i+'"] .dbtn').focus();}});
+document.addEventListener('mousedown',e=>{if(cs&&!cal.contains(e.target)&&!e.target.closest('.dbtn'))closeCal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&cs){const i=cs.i;closeCal();const b=$('rows').querySelector('tr[data-i="'+i+'"] .dbtn');if(b)b.focus();}});
+addEventListener('resize',()=>{if(cs)placeCal();});
 /* ---- lịch sử ---- */
 function renderHist(){
   const ds=[];for(let d=minD;d<=lastData;d=addDays(d,1))ds.push(d);$('hs').textContent='Từ '+fmtVN(minD)+', đơn vị đồng/lít';
